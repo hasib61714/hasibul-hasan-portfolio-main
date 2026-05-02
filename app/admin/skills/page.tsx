@@ -22,14 +22,16 @@ const skillSchema = z.object({
 });
 type SkillFormData = z.input<typeof skillSchema>;
 
-const CATEGORIES = ["Frontend", "Backend", "Database", "DevOps", "ML/AI", "Other"];
+const CATEGORIES = ["Languages", "Frontend", "Backend", "ML/AI", "Database", "AR/VR", "Security", "Tools"];
 const CAT_COLORS: Record<string, string> = {
-  Frontend: "from-brand-500 to-cyan-500",
-  Backend:  "from-green-500 to-emerald-600",
-  Database: "from-purple-500 to-violet-600",
-  DevOps:   "from-orange-500 to-amber-500",
-  "ML/AI":  "from-pink-500 to-rose-500",
-  Other:    "from-gray-500 to-gray-600",
+  Languages: "from-indigo-500 to-blue-500",
+  Frontend:  "from-brand-500 to-cyan-500",
+  Backend:   "from-green-500 to-emerald-600",
+  "ML/AI":   "from-pink-500 to-rose-500",
+  Database:  "from-purple-500 to-violet-600",
+  "AR/VR":   "from-teal-500 to-cyan-600",
+  Security:  "from-red-500 to-rose-600",
+  Tools:     "from-orange-500 to-amber-500",
 };
 
 export default function AdminSkillsPage() {

@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "About",      href: "#about"      },
-  { label: "Experience", href: "#experience" },
-  { label: "Skills",     href: "#skills"     },
-  { label: "Projects",   href: "#projects"   },
-  { label: "Resume",     href: "#resume"     },
-  { label: "Contact",    href: "#contact"    },
+  { label: "About",        href: "#about"        },
+  { label: "Experience",   href: "#experience"   },
+  { label: "Skills",       href: "#skills"       },
+  { label: "Projects",     href: "#projects"     },
+  { label: "Certificates", href: "#certificates" },
+  { label: "Resume",       href: "#resume"       },
+  { label: "Contact",      href: "#contact"      },
 ];
 
 export function Navbar() {
