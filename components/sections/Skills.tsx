@@ -2,42 +2,61 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Monitor, Server, Database, Rocket, Brain, Code2, Shield, Sparkles } from "lucide-react";
+import { Monitor, Server, Database, Rocket, Brain, Code2, Shield, Glasses } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { createClient } from "@/lib/supabase/client";
 import type { Skill } from "@/types";
 import type { LucideIcon } from "lucide-react";
 
 const FALLBACK_SKILLS: Skill[] = [
-  { id: "1",  name: "React / Next.js",          category: "Frontend",  proficiency: 95, order_index: 1,  created_at: "" },
-  { id: "2",  name: "TypeScript / JavaScript",  category: "Frontend",  proficiency: 90, order_index: 2,  created_at: "" },
-  { id: "3",  name: "Tailwind CSS / HTML / CSS", category: "Frontend",  proficiency: 92, order_index: 3,  created_at: "" },
-  { id: "4",  name: "Laravel",                  category: "Backend",   proficiency: 85, order_index: 4,  created_at: "" },
-  { id: "5",  name: "Node.js / Express.js",     category: "Backend",   proficiency: 82, order_index: 5,  created_at: "" },
-  { id: "6",  name: "FastAPI / REST API",        category: "Backend",   proficiency: 78, order_index: 6,  created_at: "" },
-  { id: "7",  name: "PostgreSQL / MySQL",        category: "Database",  proficiency: 85, order_index: 7,  created_at: "" },
-  { id: "8",  name: "MongoDB / Supabase",        category: "Database",  proficiency: 80, order_index: 8,  created_at: "" },
-  { id: "9",  name: "Python",                   category: "ML/AI",     proficiency: 88, order_index: 9,  created_at: "" },
-  { id: "10", name: "Scikit-learn / NLP",        category: "ML/AI",     proficiency: 78, order_index: 10, created_at: "" },
-  { id: "11", name: "Pandas / NumPy",            category: "ML/AI",     proficiency: 75, order_index: 11, created_at: "" },
-  { id: "12", name: "C / C++ / Java",            category: "Languages", proficiency: 72, order_index: 12, created_at: "" },
-  { id: "13", name: "Git / GitHub",              category: "DevOps",    proficiency: 90, order_index: 13, created_at: "" },
-  { id: "14", name: "Vercel / Netlify / Docker", category: "DevOps",    proficiency: 80, order_index: 14, created_at: "" },
-  { id: "15", name: "Prisma / Capacitor",        category: "DevOps",    proficiency: 72, order_index: 15, created_at: "" },
-  { id: "16", name: "Web Pentesting / OSINT",    category: "Security",  proficiency: 70, order_index: 16, created_at: "" },
-  { id: "17", name: "Linux OS / Forensics",      category: "Security",  proficiency: 68, order_index: 17, created_at: "" },
-  { id: "18", name: "Unity / XR / AR/VR",        category: "Other",     proficiency: 70, order_index: 18, created_at: "" },
+  // Languages
+  { id: "1",  name: "C / C++",                  category: "Languages", proficiency: 72, order_index: 1,  created_at: "" },
+  { id: "2",  name: "Java",                      category: "Languages", proficiency: 72, order_index: 2,  created_at: "" },
+  { id: "3",  name: "Python",                    category: "Languages", proficiency: 88, order_index: 3,  created_at: "" },
+  { id: "4",  name: "JavaScript",                category: "Languages", proficiency: 90, order_index: 4,  created_at: "" },
+  { id: "5",  name: "TypeScript",                category: "Languages", proficiency: 90, order_index: 5,  created_at: "" },
+  // Frontend
+  { id: "6",  name: "React.js",                  category: "Frontend",  proficiency: 92, order_index: 6,  created_at: "" },
+  { id: "7",  name: "Next.js 14",                category: "Frontend",  proficiency: 90, order_index: 7,  created_at: "" },
+  { id: "8",  name: "HTML5 / CSS3",              category: "Frontend",  proficiency: 92, order_index: 8,  created_at: "" },
+  { id: "9",  name: "Tailwind CSS",              category: "Frontend",  proficiency: 90, order_index: 9,  created_at: "" },
+  // Backend
+  { id: "10", name: "Laravel",                   category: "Backend",   proficiency: 85, order_index: 10, created_at: "" },
+  { id: "11", name: "Node.js / Express.js",      category: "Backend",   proficiency: 82, order_index: 11, created_at: "" },
+  { id: "12", name: "FastAPI",                   category: "Backend",   proficiency: 78, order_index: 12, created_at: "" },
+  { id: "13", name: "REST API Design",           category: "Backend",   proficiency: 80, order_index: 13, created_at: "" },
+  // AI / ML
+  { id: "14", name: "Scikit-learn",              category: "ML/AI",     proficiency: 78, order_index: 14, created_at: "" },
+  { id: "15", name: "Pandas / NumPy",            category: "ML/AI",     proficiency: 80, order_index: 15, created_at: "" },
+  { id: "16", name: "NLP / TF-IDF",             category: "ML/AI",     proficiency: 75, order_index: 16, created_at: "" },
+  { id: "17", name: "Feature Engineering",       category: "ML/AI",     proficiency: 72, order_index: 17, created_at: "" },
+  // Database
+  { id: "18", name: "MySQL / PostgreSQL",        category: "Database",  proficiency: 85, order_index: 18, created_at: "" },
+  { id: "19", name: "MongoDB",                   category: "Database",  proficiency: 80, order_index: 19, created_at: "" },
+  { id: "20", name: "Supabase (Realtime)",       category: "Database",  proficiency: 80, order_index: 20, created_at: "" },
+  // AR / VR
+  { id: "21", name: "Unity",                     category: "AR/VR",     proficiency: 70, order_index: 21, created_at: "" },
+  { id: "22", name: "XR Development",            category: "AR/VR",     proficiency: 68, order_index: 22, created_at: "" },
+  // Security
+  { id: "23", name: "Web Pentesting",            category: "Security",  proficiency: 72, order_index: 23, created_at: "" },
+  { id: "24", name: "SQL Injection / OSINT",     category: "Security",  proficiency: 70, order_index: 24, created_at: "" },
+  { id: "25", name: "Linux OS / Forensics",      category: "Security",  proficiency: 70, order_index: 25, created_at: "" },
+  // Tools
+  { id: "26", name: "Git / GitHub",              category: "Tools",     proficiency: 90, order_index: 26, created_at: "" },
+  { id: "27", name: "VS Code / Postman",         category: "Tools",     proficiency: 88, order_index: 27, created_at: "" },
+  { id: "28", name: "Vercel / Netlify",          category: "Tools",     proficiency: 80, order_index: 28, created_at: "" },
+  { id: "29", name: "Prisma / Capacitor",        category: "Tools",     proficiency: 74, order_index: 29, created_at: "" },
 ];
 
 const CATEGORY_META: Record<string, { gradient: string; bg: string; icon: LucideIcon }> = {
+  Languages: { gradient: "from-indigo-500 to-blue-500",   bg: "bg-indigo-500/10 dark:bg-indigo-500/15", icon: Code2    },
   Frontend:  { gradient: "from-brand-500 to-cyan-500",    bg: "bg-brand-500/10 dark:bg-brand-500/15",   icon: Monitor  },
   Backend:   { gradient: "from-green-500 to-emerald-600", bg: "bg-green-500/10 dark:bg-green-500/15",   icon: Server   },
-  Database:  { gradient: "from-purple-500 to-violet-600", bg: "bg-purple-500/10 dark:bg-purple-500/15", icon: Database },
-  DevOps:    { gradient: "from-orange-500 to-amber-500",  bg: "bg-orange-500/10 dark:bg-orange-500/15", icon: Rocket   },
   "ML/AI":   { gradient: "from-pink-500 to-rose-500",     bg: "bg-pink-500/10 dark:bg-pink-500/15",     icon: Brain    },
-  Languages: { gradient: "from-indigo-500 to-blue-500",   bg: "bg-indigo-500/10 dark:bg-indigo-500/15", icon: Code2    },
+  Database:  { gradient: "from-purple-500 to-violet-600", bg: "bg-purple-500/10 dark:bg-purple-500/15", icon: Database },
+  "AR/VR":   { gradient: "from-teal-500 to-cyan-600",     bg: "bg-teal-500/10 dark:bg-teal-500/15",     icon: Glasses  },
   Security:  { gradient: "from-red-500 to-rose-600",      bg: "bg-red-500/10 dark:bg-red-500/15",       icon: Shield   },
-  Other:     { gradient: "from-gray-500 to-gray-600",     bg: "bg-gray-500/10 dark:bg-gray-500/15",     icon: Sparkles },
+  Tools:     { gradient: "from-orange-500 to-amber-500",  bg: "bg-orange-500/10 dark:bg-orange-500/15", icon: Rocket   },
 };
 
 function proficiencyLabel(p: number) {
@@ -85,7 +104,7 @@ export function Skills() {
 
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
           {Object.entries(grouped).map(([category, catSkills], catIdx) => {
-            const meta = CATEGORY_META[category] ?? CATEGORY_META["Other"];
+            const meta = CATEGORY_META[category] ?? CATEGORY_META["Tools"];
             return (
               <motion.div
                 key={category}
