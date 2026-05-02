@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Monitor, Server, Database, Rocket, Brain, Code2, Shield, Sparkles } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { createClient } from "@/lib/supabase/client";
 import type { Skill } from "@/types";
+import type { LucideIcon } from "lucide-react";
 
 const FALLBACK_SKILLS: Skill[] = [
   { id: "1",  name: "React / Next.js",          category: "Frontend",  proficiency: 95, order_index: 1,  created_at: "" },
@@ -27,50 +29,27 @@ const FALLBACK_SKILLS: Skill[] = [
   { id: "18", name: "Unity / XR / AR/VR",        category: "Other",     proficiency: 70, order_index: 18, created_at: "" },
 ];
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Frontend:  "from-brand-500 to-cyan-500",
-  Backend:   "from-green-500 to-emerald-600",
-  Database:  "from-purple-500 to-violet-600",
-  DevOps:    "from-orange-500 to-amber-500",
-  "ML/AI":   "from-pink-500 to-rose-500",
-  Languages: "from-indigo-500 to-blue-500",
-  Security:  "from-red-500 to-rose-600",
-  Other:     "from-gray-500 to-gray-600",
+const CATEGORY_META: Record<string, { gradient: string; bg: string; icon: LucideIcon }> = {
+  Frontend:  { gradient: "from-brand-500 to-cyan-500",    bg: "bg-brand-500/10 dark:bg-brand-500/15",   icon: Monitor  },
+  Backend:   { gradient: "from-green-500 to-emerald-600", bg: "bg-green-500/10 dark:bg-green-500/15",   icon: Server   },
+  Database:  { gradient: "from-purple-500 to-violet-600", bg: "bg-purple-500/10 dark:bg-purple-500/15", icon: Database },
+  DevOps:    { gradient: "from-orange-500 to-amber-500",  bg: "bg-orange-500/10 dark:bg-orange-500/15", icon: Rocket   },
+  "ML/AI":   { gradient: "from-pink-500 to-rose-500",     bg: "bg-pink-500/10 dark:bg-pink-500/15",     icon: Brain    },
+  Languages: { gradient: "from-indigo-500 to-blue-500",   bg: "bg-indigo-500/10 dark:bg-indigo-500/15", icon: Code2    },
+  Security:  { gradient: "from-red-500 to-rose-600",      bg: "bg-red-500/10 dark:bg-red-500/15",       icon: Shield   },
+  Other:     { gradient: "from-gray-500 to-gray-600",     bg: "bg-gray-500/10 dark:bg-gray-500/15",     icon: Sparkles },
 };
 
-function SkillBar({ skill, isVisible }: { skill: Skill; isVisible: boolean }) {
-  const gradient = CATEGORY_COLORS[skill.category] || "from-brand-500 to-brand-600";
-
-  return (
-    <div className="group">
-      <div className="flex items-center justify-between mb-2.5">
-        <span className="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-          {skill.name}
-        </span>
-        <span className={`text-sm font-extrabold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>
-          {skill.proficiency}%
-        </span>
-      </div>
-      <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden shadow-inner">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: isVisible ? `${skill.proficiency}%` : "0%" }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className={`h-full rounded-full bg-gradient-to-r ${gradient} shadow-sm relative overflow-hidden`}
-        >
-          {/* Shimmer sweep */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-        </motion.div>
-      </div>
-    </div>
-  );
+function proficiencyLabel(p: number) {
+  if (p >= 90) return { label: "Expert",        dots: 5 };
+  if (p >= 80) return { label: "Advanced",      dots: 4 };
+  if (p >= 70) return { label: "Proficient",    dots: 3 };
+  if (p >= 55) return { label: "Intermediate",  dots: 2 };
+  return              { label: "Beginner",       dots: 1 };
 }
 
 export function Skills() {
   const [skills, setSkills] = useState<Skill[]>(FALLBACK_SKILLS);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
     const supabase = createClient();
@@ -83,15 +62,19 @@ export function Skills() {
       });
   }, []);
 
-  const categories = ["All", ...Array.from(new Set(skills.map((s) => s.category)))];
-  const filtered =
-    activeCategory === "All"
-      ? skills
-      : skills.filter((s) => s.category === activeCategory);
+  // Group by category
+  const grouped = skills.reduce<Record<string, Skill[]>>((acc, skill) => {
+    if (!acc[skill.category]) acc[skill.category] = [];
+    acc[skill.category].push(skill);
+    return acc;
+  }, {});
 
   return (
     <section id="skills" className="section-padding bg-white dark:bg-gray-950 relative overflow-hidden">
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent-400/5 dark:bg-accent-600/5 rounded-full blur-3xl pointer-events-none" />
+      {/* Background decorations */}
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-brand-400/5 dark:bg-brand-600/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/5 dark:bg-accent-600/5 rounded-full blur-3xl pointer-events-none" />
+
       <div className="container-max">
         <SectionHeader
           badge="My Skills"
@@ -100,42 +83,95 @@ export function Skills() {
           subtitle="A comprehensive overview of technologies and tools I work with daily."
         />
 
-        {/* Category filter */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                activeCategory === cat
-                  ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/30 scale-105"
-                  : "glass-card text-gray-600 dark:text-gray-400 hover:text-brand-500 hover:scale-105"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {Object.entries(grouped).map(([category, catSkills], catIdx) => {
+            const meta = CATEGORY_META[category] ?? CATEGORY_META["Other"];
+            return (
+              <motion.div
+                key={category}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ delay: catIdx * 0.07, ease: "easeOut" }}
+                className="card-premium rounded-2xl p-5 flex flex-col gap-4"
+              >
+                {/* Category header */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-md flex-shrink-0`}>
+                    <meta.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className={`text-sm font-extrabold bg-gradient-to-r ${meta.gradient} bg-clip-text text-transparent`}>
+                      {category}
+                    </h3>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{catSkills.length} skill{catSkills.length > 1 ? "s" : ""}</p>
+                  </div>
+                </div>
+
+                {/* Skill pills */}
+                <div className="flex flex-wrap gap-2">
+                  {catSkills.map((skill, i) => {
+                    const { label, dots } = proficiencyLabel(skill.proficiency);
+                    return (
+                      <motion.div
+                        key={skill.id}
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: catIdx * 0.07 + i * 0.04 }}
+                        title={`${skill.name} — ${label} (${skill.proficiency}%)`}
+                        className={`group flex items-center gap-2 px-3 py-1.5 rounded-xl ${meta.bg} border border-white/10 dark:border-white/5 hover:scale-105 transition-transform duration-200 cursor-default`}
+                      >
+                        <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                          {skill.name}
+                        </span>
+                        {/* Proficiency dots */}
+                        <div className="flex gap-0.5 flex-shrink-0">
+                          {Array.from({ length: 5 }).map((_, d) => (
+                            <div
+                              key={d}
+                              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                d < dots
+                                  ? `bg-gradient-to-br ${meta.gradient}`
+                                  : "bg-gray-300 dark:bg-gray-700"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
-        <div ref={ref} className="grid md:grid-cols-2 gap-5">
-          {filtered.map((skill, idx) => (
-            <motion.div
-              key={skill.id}
-              initial={{ opacity: 0, y: 24 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: idx * 0.05, ease: "easeOut" }}
-              className="card-premium rounded-2xl p-5 group"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className={`px-3 py-1 rounded-lg text-xs font-bold bg-gradient-to-r ${CATEGORY_COLORS[skill.category] || "from-brand-500 to-brand-600"} text-white shadow-sm`}>
-                  {skill.category}
-                </span>
+        {/* Legend */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-wrap justify-center gap-4 mt-10 text-xs text-gray-400 dark:text-gray-500"
+        >
+          {[
+            { dots: 1, label: "Beginner" },
+            { dots: 2, label: "Intermediate" },
+            { dots: 3, label: "Proficient" },
+            { dots: 4, label: "Advanced" },
+            { dots: 5, label: "Expert" },
+          ].map(({ dots, label }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className="flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, d) => (
+                  <div key={d} className={`w-1.5 h-1.5 rounded-full ${d < dots ? "bg-brand-500" : "bg-gray-300 dark:bg-gray-700"}`} />
+                ))}
               </div>
-              <SkillBar skill={skill} isVisible={isInView} />
-            </motion.div>
+              <span>{label}</span>
+            </div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
