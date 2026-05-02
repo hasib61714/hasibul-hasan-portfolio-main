@@ -124,10 +124,10 @@ export function Footer() {
         {/* bottom bar */}
         <div className="pt-6 border-t border-gray-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-600">
-            © {year} Md Hasibul Hasan. All rights reserved.
+            © {year} Md.Hasibul Hasan. All rights reserved.
           </p>
           <p className="text-xs text-gray-600">
-            Designed &amp; Developed by <span className="text-brand-500 font-medium">Hasibul Hasan</span>
+            Designed &amp; Developed by <span className="text-brand-500 font-medium">Md.Hasibul Hasan</span>
           </p>
         </div>
 
