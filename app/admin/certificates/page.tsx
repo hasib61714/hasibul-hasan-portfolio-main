@@ -141,8 +141,24 @@ export default function AdminCertificatesPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {certs.map((cert) => (
               <div key={cert.id} className="card-premium rounded-2xl overflow-hidden">
-                <div className="h-32 bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center relative">
-                  <Award className="w-10 h-10 text-white opacity-80" />
+                <div className="h-32 bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center relative overflow-hidden">
+                  {cert.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cert.image_url} alt={cert.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <Award className="w-10 h-10 text-white opacity-80" />
+                  )}
+                  {cert.file_url && (
+                    <a
+                      href={cert.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-black/50 text-white text-xs font-semibold hover:bg-black/70 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      PDF
+                    </a>
+                  )}
                 </div>
                 <div className="p-4">
                   <h3 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-2 mb-1">{cert.title}</h3>
