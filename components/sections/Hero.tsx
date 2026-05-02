@@ -94,7 +94,7 @@ export function Hero() {
             >
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.08] tracking-tight">
                 <span className="block text-gray-900 dark:text-white">Hi, I&apos;m</span>
-                <span className="block gradient-text mt-1">Hasibul</span>
+                <span className="block gradient-text mt-1">Md.Hasibul Hasan</span>
                 <span className="block text-gray-500 dark:text-gray-400 text-4xl md:text-5xl lg:text-6xl font-bold mt-2">
                   Software &amp; ML Engineer
                 </span>

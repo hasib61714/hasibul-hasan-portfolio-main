@@ -121,6 +121,7 @@ Add all environment variables in Vercel dashboard → Project → Settings → E
 
 ## Author
 
-**Md. Hasibul Hasan**  
+**Md Hasibul Hasan**  
 Software Engineer at Red Data (Pvt.) Ltd.  
 [LinkedIn](https://linkedin.com/in/hasibulhasan) · [GitHub](https://github.com/hasib61714)
+
