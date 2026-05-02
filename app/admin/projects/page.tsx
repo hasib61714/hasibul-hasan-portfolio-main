@@ -138,7 +138,7 @@ export default function AdminProjectsPage() {
     <>
       <AdminHeader title="Projects" subtitle="Manage your portfolio projects" />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto">
         <div className="flex justify-end mb-6">
           <Button onClick={openCreate} leftIcon={<Plus className="w-4 h-4" />}>
             Add Project

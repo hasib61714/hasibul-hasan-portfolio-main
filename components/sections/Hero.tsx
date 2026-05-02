@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Download, Mail, ExternalLink, Sparkles } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
 import { GITHUB_URL, LINKEDIN_URL, EMAIL_ADDRESS } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 const SOCIAL_LINKS = [
   { icon: GitHubIcon,   href: GITHUB_URL,               label: "GitHub"   },
@@ -20,6 +22,16 @@ const STATS = [
 ];
 
 export function Hero() {
+  const [profilePicUrl, setProfilePicUrl] = useState<string>("");
+  const [profilePicError, setProfilePicError] = useState(false);
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+    const supabase = createClient();
+    const { data } = supabase.storage.from("profile").getPublicUrl("avatar/current");
+    setProfilePicUrl(data.publicUrl);
+  }, []);
+
   const scrollToProjects = () => {
     document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -207,7 +219,17 @@ export function Hero() {
               {/* Avatar frame */}
               <div className="relative w-72 h-72 md:w-[340px] md:h-[340px] rounded-full p-1 bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 shadow-2xl shadow-brand-500/25">
                 <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center text-[100px] select-none">
-                  👨‍💻
+                  {profilePicUrl && !profilePicError ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={profilePicUrl}
+                      alt="Hasibul Hasan"
+                      className="w-full h-full object-cover"
+                      onError={() => setProfilePicError(true)}
+                    />
+                  ) : (
+                    "👨‍💻"
+                  )}
                 </div>
               </div>
 

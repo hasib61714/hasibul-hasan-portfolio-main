@@ -43,7 +43,7 @@ export function Modal({ isOpen, onClose, title, children, size = "md", className
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -60,7 +60,8 @@ export function Modal({ isOpen, onClose, title, children, size = "md", className
             exit={{ opacity: 0,  scale: 0.95, y: 20 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
-              "relative w-full glass-card rounded-2xl shadow-2xl",
+              "relative w-full glass-card rounded-2xl shadow-2xl flex flex-col my-auto",
+              "max-h-[90vh]",
               sizes[size],
               className
             )}
@@ -89,7 +90,7 @@ export function Modal({ isOpen, onClose, title, children, size = "md", className
             )}
 
             {/* Content */}
-            <div className="p-6">{children}</div>
+            <div className="p-6 overflow-y-auto flex-1">{children}</div>
           </motion.div>
         </div>
       )}

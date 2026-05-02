@@ -96,7 +96,7 @@ export default function AdminSkillsPage() {
     <>
       <AdminHeader title="Skills" subtitle="Manage your technical skills" />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto">
         <div className="flex justify-end mb-6">
           <Button onClick={openCreate} leftIcon={<Plus className="w-4 h-4" />}>Add Skill</Button>
         </div>

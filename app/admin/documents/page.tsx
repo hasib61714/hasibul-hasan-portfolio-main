@@ -157,7 +157,7 @@ export default function AdminDocumentsPage() {
     <>
       <AdminHeader title="Documents" subtitle="Manage your CV and cover letter" />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto">
         {/* Upload cards */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <UploadCard type="cv"           title="Upload CV"           icon={FileText}  color="from-brand-500 to-brand-600"   />

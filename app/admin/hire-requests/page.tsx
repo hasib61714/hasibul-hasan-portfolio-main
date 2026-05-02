@@ -63,7 +63,7 @@ export default function AdminHireRequestsPage() {
     <>
       <AdminHeader title="Hire Requests" subtitle={`${counts.pending ?? 0} pending requests`} />
 
-      <main className="flex-1 p-6 space-y-6">
+      <main className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Filter tabs */}
         <div className="flex flex-wrap gap-2">
           {(["all", ...STATUS_OPTIONS] as const).map((s) => (

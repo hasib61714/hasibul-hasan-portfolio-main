@@ -27,10 +27,12 @@ type CertFormData = z.input<typeof certSchema>;
 
 export default function AdminCertificatesPage() {
   const [certs,     setCerts]     = useState<Certificate[]>([]);
-  const [loading,   setLoading]   = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing,   setEditing]   = useState<Certificate | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [loading,      setLoading]      = useState(true);
+  const [modalOpen,    setModalOpen]    = useState(false);
+  const [editing,      setEditing]      = useState<Certificate | null>(null);
+  const [uploading,    setUploading]    = useState(false);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [pendingPdf,   setPendingPdf]   = useState<File | null>(null);
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } =
     useForm<CertFormData>({ resolver: zodResolver(certSchema) });
@@ -60,12 +62,16 @@ export default function AdminCertificatesPage() {
 
   const openCreate = () => {
     setEditing(null);
+    setPendingImage(null);
+    setPendingPdf(null);
     reset({ issue_date: new Date().toISOString().split("T")[0] });
     setModalOpen(true);
   };
 
   const openEdit = (cert: Certificate) => {
     setEditing(cert);
+    setPendingImage(null);
+    setPendingPdf(null);
     reset({
       title: cert.title, issuer: cert.issuer,
       issue_date: cert.issue_date,
@@ -78,17 +84,37 @@ export default function AdminCertificatesPage() {
 
   const onSubmit = async (data: CertFormData) => {
     const supabase = createClient();
-    const payload = { ...data, credential_url: data.credential_url || null, expiry_date: data.expiry_date || null };
+    const payload: Record<string, unknown> = {
+      ...data,
+      credential_url: data.credential_url || null,
+      expiry_date:    data.expiry_date    || null,
+    };
+
+    let certId: string;
     if (editing) {
       const { error } = await supabase.from("certificates").update(payload).eq("id", editing.id);
       if (error) { toast.error("Failed to update"); return; }
-      toast.success("Certificate updated!");
+      certId = editing.id;
     } else {
-      const { error } = await supabase.from("certificates").insert(payload);
-      if (error) { toast.error("Failed to create"); return; }
-      toast.success("Certificate added!");
+      const { data: inserted, error } = await supabase.from("certificates").insert(payload).select("id").single();
+      if (error || !inserted) { toast.error("Failed to create"); return; }
+      certId = inserted.id;
     }
+
+    // Upload pending files
+    if (pendingImage) {
+      const url = await handleFileUpload(pendingImage, certId, "image");
+      if (url) await supabase.from("certificates").update({ image_url: url }).eq("id", certId);
+    }
+    if (pendingPdf) {
+      const url = await handleFileUpload(pendingPdf, certId, "file");
+      if (url) await supabase.from("certificates").update({ file_url: url }).eq("id", certId);
+    }
+
+    toast.success(editing ? "Certificate updated!" : "Certificate added!");
     setModalOpen(false);
+    setPendingImage(null);
+    setPendingPdf(null);
     fetchCerts();
   };
 
@@ -104,7 +130,7 @@ export default function AdminCertificatesPage() {
     <>
       <AdminHeader title="Certificates" subtitle="Manage your certifications" />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto">
         <div className="flex justify-end mb-6">
           <Button onClick={openCreate} leftIcon={<Plus className="w-4 h-4" />}>Add Certificate</Button>
         </div>
@@ -196,9 +222,34 @@ export default function AdminCertificatesPage() {
           </div>
           <Input label="Credential URL" type="url" placeholder="https://..." error={errors.credential_url?.message} {...register("credential_url")} />
           <Input label="Description" placeholder="Brief description..." {...register("description")} />
+
+          {/* File uploads */}
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Certificate Image</p>
+              <label className="cursor-pointer block">
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => setPendingImage(e.target.files?.[0] ?? null)} />
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500 transition-colors text-sm text-gray-500 dark:text-gray-400">
+                  <Upload className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{pendingImage ? pendingImage.name : "Choose image..."}</span>
+                </div>
+              </label>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">PDF Certificate</p>
+              <label className="cursor-pointer block">
+                <input type="file" accept=".pdf" className="hidden" onChange={(e) => setPendingPdf(e.target.files?.[0] ?? null)} />
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500 transition-colors text-sm text-gray-500 dark:text-gray-400">
+                  <Upload className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{pendingPdf ? pendingPdf.name : "Choose PDF..."}</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="ghost" className="flex-1" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button type="submit" className="flex-1" isLoading={isSubmitting}>{editing ? "Update" : "Add"}</Button>
+            <Button type="submit" className="flex-1" isLoading={isSubmitting || uploading}>{editing ? "Update" : "Add"}</Button>
           </div>
         </form>
       </Modal>

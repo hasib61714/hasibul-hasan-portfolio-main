@@ -1,5 +1,6 @@
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatsCard } from "@/components/admin/StatsCard";
+import { ProfileUpload } from "@/components/admin/ProfileUpload";
 import { createClient } from "@/lib/supabase/server";
 import { FolderKanban, Wrench, Award, MessageSquare, Briefcase, FileText, Plus, ArrowRight } from "lucide-react";
 import { formatDate } from "@/lib/utils";
@@ -62,13 +63,15 @@ export default async function AdminDashboard() {
         subtitle="Welcome back! Here's what's happening with your portfolio."
       />
 
-      <main className="flex-1 p-6 space-y-6">
+      <main className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Stats grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {STAT_CARDS.map((card) => (
             <StatsCard key={card.title} {...card} />
           ))}
         </div>
+
+        <ProfileUpload />
 
         {/* Quick actions */}
         <div>

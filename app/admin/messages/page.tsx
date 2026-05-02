@@ -70,7 +70,7 @@ export default function AdminMessagesPage() {
     <>
       <AdminHeader title="Messages" subtitle={`${unreadCount} unread message${unreadCount !== 1 ? "s" : ""}`} />
 
-      <main className="flex-1 p-6 flex gap-5 min-h-0">
+      <main className="flex-1 p-6 flex gap-5 min-h-0 overflow-hidden">
         {/* List */}
         <div className="w-full lg:w-96 flex-shrink-0 flex flex-col gap-3">
           {/* Toolbar */}
