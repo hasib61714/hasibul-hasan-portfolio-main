@@ -110,7 +110,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4">
+    <div className="dark min-h-screen flex items-center justify-center bg-gray-950 p-4">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-20 w-64 h-64 bg-brand-600/20 rounded-full filter blur-3xl animate-blob" />
