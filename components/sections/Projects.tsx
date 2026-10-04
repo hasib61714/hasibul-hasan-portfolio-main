@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ArrowUpRight, Brain, Code2, Layers, ShoppingBag, Smartphone } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, ArrowUpRight, Brain, Code2, Layers, ShoppingBag, Smartphone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { GitHubIcon } from "@/components/ui/SocialIcons";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { cn, safeUrl } from "@/lib/utils";
+import { cn, projectSlug, safeUrl } from "@/lib/utils";
 import type { Project } from "@/types";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -115,7 +116,12 @@ export function Projects({ projects }: ProjectsProps) {
 
                   <div className="flex flex-1 flex-col p-5">
                     <h3 className="mb-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-brand-600 dark:text-white dark:group-hover:text-brand-300">
-                      {project.title}
+                      <Link
+                        href={`/projects/${projectSlug(project)}`}
+                        className="after:absolute after:inset-0 after:z-10 focus-visible:outline-offset-4"
+                      >
+                        {project.title}
+                      </Link>
                     </h3>
                     <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                       {project.description}
@@ -135,15 +141,21 @@ export function Projects({ projects }: ProjectsProps) {
                       )}
                     </ul>
 
-                    <div className="mt-auto flex items-center gap-2 border-t border-gray-100 pt-4 dark:border-white/[0.06]">
+                    <div className="relative z-20 mt-auto flex items-center gap-2 border-t border-gray-100 pt-4 dark:border-white/[0.06]">
+                      <Link
+                        href={`/projects/${projectSlug(project)}`}
+                        className="mr-auto inline-flex items-center gap-1 text-xs font-semibold text-brand-600 transition-colors hover:text-brand-500 dark:text-brand-300"
+                      >
+                        Case study <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
                       {live && (
                         <a
                           href={live}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-500"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-500"
                         >
-                          Live demo <ArrowUpRight className="h-3.5 w-3.5" />
+                          Live <ArrowUpRight className="h-3.5 w-3.5" />
                         </a>
                       )}
                       {code && (
@@ -151,13 +163,10 @@ export function Projects({ projects }: ProjectsProps) {
                           href={code}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3.5 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-brand-400/60 hover:text-brand-600 dark:border-white/10 dark:text-gray-300 dark:hover:text-brand-300"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-brand-400/60 hover:text-brand-600 dark:border-white/10 dark:text-gray-300 dark:hover:text-brand-300"
                         >
                           <GitHubIcon className="h-3.5 w-3.5" /> Source
                         </a>
-                      )}
-                      {!live && !code && (
-                        <span className="text-xs text-gray-500 dark:text-gray-500">Private / client project</span>
                       )}
                     </div>
                   </div>

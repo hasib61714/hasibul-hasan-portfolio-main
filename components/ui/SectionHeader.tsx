@@ -28,7 +28,7 @@ export function SectionHeader({
       )}
       <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white tracking-tight leading-[1.1] text-balance">
         {title}{" "}
-        {highlight && <span className="gradient-text">{highlight}</span>}
+        {highlight && <span className="gradient-text accent-serif">{highlight}</span>}
       </h2>
       {subtitle && (
         <p className={cn("mt-5 text-base sm:text-lg text-gray-600 dark:text-gray-400 leading-relaxed text-pretty", centered && "max-w-2xl mx-auto")}>

@@ -10,8 +10,21 @@ export interface Project {
   category: string;
   featured: boolean;
   order_index: number;
+  /** Case-study fields (all optional). */
+  problem?: string | null;
+  solution?: string | null;
+  highlights?: string[] | null;
+  role?: string | null;
+  year?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  company?: string;
 }
 
 export interface Skill {

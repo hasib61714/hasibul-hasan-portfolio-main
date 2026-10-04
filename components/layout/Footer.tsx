@@ -78,7 +78,7 @@ export function Footer() {
             <ul className="space-y-3">
               {NAV_ITEMS.map(({ label, href }) => (
                 <li key={href}>
-                  <a href={href} className="group flex w-fit items-center gap-1.5 text-sm transition-colors hover:text-brand-300">
+                  <a href={`/${href}`} className="group flex w-fit items-center gap-1.5 text-sm transition-colors hover:text-brand-300">
                     <span className="h-px w-0 rounded-full bg-brand-400 transition-all duration-200 group-hover:w-3" />
                     {label}
                   </a>
@@ -101,9 +101,9 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
           <p className="text-xs text-gray-500">© {year} {SITE.name}. All rights reserved.</p>
-          <a href="#hero" className="inline-flex items-center gap-1.5 text-xs text-gray-500 transition-colors hover:text-brand-300">
+          <Link href="/#hero" className="inline-flex items-center gap-1.5 text-xs text-gray-500 transition-colors hover:text-brand-300">
             Back to top <ArrowUp className="h-3.5 w-3.5" />
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

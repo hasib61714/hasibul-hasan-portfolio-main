@@ -50,3 +50,16 @@ export function safeRedirectPath(path: string | null | undefined, fallback = "/a
   }
   return path;
 }
+
+export function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+/** URL slug for a project's case-study page, e.g. "IMAP — AI Service Platform" → "imap-ai-service-platform". */
+export function projectSlug(project: { title: string }): string {
+  return slugify(project.title);
+}

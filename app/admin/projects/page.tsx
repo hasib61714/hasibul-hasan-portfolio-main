@@ -22,6 +22,11 @@ const projectSchema = z.object({
   title:            z.string().min(1, "Title is required"),
   description:      z.string().min(1, "Description is required"),
   long_description: z.string().optional(),
+  problem:          z.string().optional(),
+  solution:         z.string().optional(),
+  highlights:       z.string().optional(),
+  role:             z.string().optional(),
+  year:             z.string().optional(),
   tech_stack:       z.string().min(1, "Add at least one technology"),
   category:         z.string().min(1, "Category is required"),
   image_url:        optionalHttpUrl,
@@ -73,6 +78,11 @@ export default function AdminProjectsPage() {
       title:            project.title,
       description:      project.description,
       long_description: project.long_description ?? "",
+      problem:          project.problem ?? "",
+      solution:         project.solution ?? "",
+      highlights:       (project.highlights ?? []).join("\n"),
+      role:             project.role ?? "",
+      year:             project.year ?? "",
       tech_stack:       project.tech_stack.join(", "),
       category:         project.category,
       image_url:        project.image_url ?? "",
@@ -110,6 +120,11 @@ export default function AdminProjectsPage() {
     const payload = {
       ...data,
       tech_stack: data.tech_stack.split(",").map((t) => t.trim()).filter(Boolean),
+      problem:    data.problem?.trim()  || null,
+      solution:   data.solution?.trim() || null,
+      role:       data.role?.trim()     || null,
+      year:       data.year?.trim()     || null,
+      highlights: (data.highlights ?? "").split("\n").map((h) => h.trim()).filter(Boolean),
       image_url:  data.image_url?.trim()  || null,
       live_url:   data.live_url?.trim()   || null,
       github_url: data.github_url?.trim() || null,
@@ -238,7 +253,14 @@ export default function AdminProjectsPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input label="Title *" error={errors.title?.message} {...register("title")} />
           <Textarea label="Short Description *" rows={3} error={errors.description?.message} {...register("description")} />
-          <Textarea label="Detailed Description" rows={4} {...register("long_description")} />
+          <Textarea label="Detailed Description (case-study overview)" rows={4} {...register("long_description")} />
+          <Textarea label="The challenge (case study)" rows={3} {...register("problem")} />
+          <Textarea label="The solution (case study)" rows={3} {...register("solution")} />
+          <Textarea label="Highlights — one per line" rows={4} {...register("highlights")} />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input label="Your role" placeholder="Full-stack developer" {...register("role")} />
+            <Input label="Year" placeholder="2026" {...register("year")} />
+          </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <Input label="Category *" placeholder="Full-Stack, SaaS, etc." error={errors.category?.message} {...register("category")} />
             <Input label="Order Index" type="number" {...register("order_index", { valueAsNumber: true })} />
