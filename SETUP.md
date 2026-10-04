@@ -71,6 +71,16 @@ Find these values in Supabase dashboard → **Project Settings** → **API**.
 
 ---
 
+## 3b. Optional features
+
+| Feature | How to enable |
+|---|---|
+| **Book a call** buttons | Set `NEXT_PUBLIC_BOOKING_URL` (Cal.com / Calendly link) in Vercel / `.env.local` |
+| **Testimonials** section | Add real quotes to `lib/testimonials.ts` — the section stays hidden while the list is empty |
+| **Case-study content** | Admin → Projects → edit a project and fill *challenge*, *solution*, *highlights*, *role*, *year* (re-run `supabase/schema.sql` once to add these columns) |
+
+---
+
 ## 4. Personalize Your Portfolio
 
 ### Core Info — `lib/site.ts`

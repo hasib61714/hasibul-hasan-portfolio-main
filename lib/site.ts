@@ -19,6 +19,9 @@ export const SITE = {
   availability: "Open to remote roles & contracts worldwide",
   /** Years of professional experience shown in the hero/about stats. */
   yearsExperience: "3+",
+  /** Optional scheduling link (Cal.com, Calendly…). Set NEXT_PUBLIC_BOOKING_URL to show "Book a call" buttons. */
+  bookingUrl: process.env.NEXT_PUBLIC_BOOKING_URL ?? "",
+  githubUser: "hasib61714",
 } as const;
 
 export const NAV_ITEMS = [

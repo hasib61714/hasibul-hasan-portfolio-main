@@ -35,6 +35,10 @@ A modern, full-stack personal portfolio built with **Next.js 15**, **TypeScript*
 - **Hire Me / Contact** — Validated, rate-limited, spam-protected forms
 - **Admin Panel** — Full CRUD for all sections, restricted to registered admins
 - **Global-ready** — USD budgets, timezone/availability info, SEO (Open Graph image, sitemap, robots, JSON-LD), light/dark theme, reduced-motion & keyboard accessible
+- **Case studies** — every project gets its own page at `/projects/[slug]` (challenge, solution, highlights, tech stack, browser mockup) editable from the admin panel
+- **Command palette** — press `Ctrl/⌘ + K` to jump to sections, projects and quick actions (email, WhatsApp, CV, theme)
+- **Motion & depth** — word-reveal headline, cursor-follow card spotlight, magnetic CTA, count-up stats, serif accent typography, film-grain texture (all respect reduced-motion)
+- **Live GitHub stats** — public repos and stars pulled server-side (cached 1 h)
 - **Fast** — Server-rendered content cached for 60 s (ISR); no Supabase client shipped to public visitors
 
 ---

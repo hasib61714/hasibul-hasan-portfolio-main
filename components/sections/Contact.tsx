@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, MessageCircle, MapPin, Send, User, Copy, Check } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Send, User, Copy, Check, CalendarCheck } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
@@ -121,6 +121,16 @@ export function Contact() {
               })}
             </ul>
 
+            {SITE.bookingUrl && (
+              <a
+                href={SITE.bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+              >
+                <CalendarCheck className="h-4 w-4" /> Book a 30-minute call
+              </a>
+            )}
             <button
               type="button"
               onClick={copyEmail}

@@ -4,10 +4,13 @@ import { motion } from "framer-motion";
 import { MapPin, Clock, Layers, Building2, Lightbulb, GraduationCap, Briefcase, Sparkles } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { SITE } from "@/lib/site";
+import { CountUp } from "@/components/ui/CountUp";
+import type { GithubStats } from "@/lib/github";
 
 interface AboutProps {
   projectCount: number;
   certificateCount: number;
+  github: GithubStats | null;
 }
 
 const PILLARS = [
@@ -41,11 +44,17 @@ const item = {
   show: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.5, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
-export function About({ projectCount, certificateCount }: AboutProps) {
+export function About({ projectCount, certificateCount, github }: AboutProps) {
   const stats = [
     { value: SITE.yearsExperience, label: "Years building software" },
     { value: `${projectCount}`,      label: "Projects showcased" },
     { value: `${certificateCount}`,  label: "Certifications" },
+    ...(github
+      ? [
+          { value: `${github.repos}`, label: "Public GitHub repos" },
+          { value: `${github.stars}`, label: "GitHub stars earned" },
+        ]
+      : []),
   ];
 
   const cardProps = (i: number) => ({
@@ -173,10 +182,10 @@ export function About({ projectCount, certificateCount }: AboutProps) {
 
           {/* Stats */}
           <motion.article {...cardProps(7)} className="card-premium rounded-3xl p-6 md:col-span-4">
-            <dl className="grid h-full grid-cols-3 gap-3 text-center md:grid-cols-1 md:content-center md:gap-4 md:text-left">
+            <dl className="grid h-full grid-cols-3 gap-3 text-center md:grid-cols-1 md:content-center md:gap-3 md:text-left">
               {stats.map((s) => (
                 <div key={s.label} className="md:grid md:grid-cols-[4rem_1fr] md:items-baseline md:gap-3">
-                  <dd className="gradient-text text-3xl font-bold md:text-right">{s.value}</dd>
+                  <dd className="gradient-text text-3xl font-bold md:text-right"><CountUp value={s.value} /></dd>
                   <dt className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 md:mt-0 md:text-sm">{s.label}</dt>
                 </div>
               ))}

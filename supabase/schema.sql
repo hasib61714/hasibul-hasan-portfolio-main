@@ -28,6 +28,13 @@ CREATE TABLE IF NOT EXISTS projects (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Case-study fields (used by /projects/[slug]); safe to re-run
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS problem    TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS solution   TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS highlights TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS role       TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS year       TEXT;
+
 -- ─────────────────────────────────────────────
 -- 2. SKILLS
 -- ─────────────────────────────────────────────

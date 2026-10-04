@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
-import { Menu, X, Code2 } from "lucide-react";
+import { Menu, X, Code2, Search } from "lucide-react";
+import { OPEN_PALETTE_EVENT } from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, SITE } from "@/lib/site";
@@ -12,6 +14,9 @@ export function Navbar() {
   const [isScrolled,    setIsScrolled]    = useState(false);
   const [isMobileOpen,  setIsMobileOpen]  = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const pathname = usePathname();
+  const router = useRouter();
+  const onHome = pathname === "/";
 
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 28, restDelta: 0.001 });
@@ -51,7 +56,8 @@ export function Navbar() {
 
   const goTo = (href: string) => {
     setIsMobileOpen(false);
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+    if (onHome) document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+    else router.push(`/${href}`);
   };
 
   return (
@@ -115,6 +121,15 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event(OPEN_PALETTE_EVENT))}
+              aria-label="Open command palette"
+              className="hidden xl:inline-flex h-9 items-center gap-2 rounded-xl border border-gray-200/80 bg-white/60 px-3 text-xs text-gray-500 transition-colors hover:border-brand-500/50 hover:text-brand-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-400 dark:hover:text-brand-300"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <kbd className="font-mono text-[10px]">Ctrl K</kbd>
+            </button>
             <ThemeToggle />
             <button
               type="button"

@@ -50,6 +50,9 @@ export const FALLBACK_PROJECTS: Project[] = [
   {
     id: "1",
     title: "Internship Hub",
+    problem: "Students, employers and administrators need one place to publish opportunities, apply for them and follow each application — in the language they are most comfortable with.",
+    solution: "A role-based platform with separate student, employer and admin experiences, JWT authentication, application tracking and a fully bilingual (Bengali / English) interface, deployed on Vercel.",
+    highlights: ["Role-based access for students, employers and admins", "JWT authentication", "Bilingual Bengali / English interface", "End-to-end application tracking", "Deployed on Vercel"],
     description: "Role-based job & internship platform for students, employers and admins with JWT auth, bilingual (Bengali/English) UI and application tracking. Deployed on Vercel.",
     tech_stack: ["React", "Laravel", "MySQL", "JWT", "Vercel"],
     category: "Full-Stack",
@@ -63,6 +66,9 @@ export const FALLBACK_PROJECTS: Project[] = [
   {
     id: "2",
     title: "Heart Disease Prediction",
+    problem: "A heart-disease risk score is only useful if clinicians and patients can understand why the model produced it.",
+    solution: "A FastAPI service serving a scikit-learn model, paired with a React frontend that shows the predicted risk together with explainable-AI insights, and exports the result as a PDF.",
+    highlights: ["Explainable AI (XAI) insights alongside each prediction", "PDF export of results", "FastAPI backend with a React frontend", "Scikit-learn model for risk prediction"],
     description: "ML model with explainable AI (XAI) and PDF export. FastAPI backend + React frontend for predicting heart disease risk with model insights.",
     tech_stack: ["Python", "FastAPI", "React", "Scikit-learn"],
     category: "ML/AI",
@@ -76,6 +82,9 @@ export const FALLBACK_PROJECTS: Project[] = [
   {
     id: "3",
     title: "HairHub ERP System",
+    problem: "Running a multi-factory business means keeping inventory, challans, cash flow and party settlements consistent in one system.",
+    solution: "A production ERP with nine integrated modules, built with React, TypeScript and Supabase, made mobile-ready through Capacitor and live on Netlify.",
+    highlights: ["9 integrated ERP modules", "Inventory, challan, cash flow and party settlement", "Mobile-ready via Capacitor", "Live in production on Netlify"],
     description: "Production 9-module ERP for multi-factory business — inventory, challan, cash flow, party settlement. Mobile-ready via Capacitor; live on Netlify.",
     tech_stack: ["React", "TypeScript", "Supabase", "Capacitor", "Tailwind CSS"],
     category: "Full-Stack",
@@ -89,6 +98,9 @@ export const FALLBACK_PROJECTS: Project[] = [
   {
     id: "4",
     title: "IMAP — AI Service Platform",
+    problem: "People need a trustworthy way to find, book and follow service providers across the country in real time.",
+    solution: "A national AI-powered service marketplace with live GPS tracking, real-time WebSocket chat and OTP authentication, delivering 19+ features end to end.",
+    highlights: ["Live GPS tracking", "Real-time WebSocket chat", "OTP-based authentication", "19+ features", "AI-powered service matching"],
     description: "National AI-powered service marketplace with live GPS tracking, real-time WebSocket chat, OTP auth and 19+ features.",
     tech_stack: ["JavaScript", "AI", "GPS", "WebSocket", "Node.js"],
     category: "Full-Stack",
@@ -102,6 +114,9 @@ export const FALLBACK_PROJECTS: Project[] = [
   {
     id: "5",
     title: "TrendHaus E-Commerce",
+    problem: "An online store needs the full shopping journey — and the back-office tools behind it — in one coherent product.",
+    solution: "A complete e-commerce platform covering cart, checkout, order tracking, wishlist and coupons, with an admin panel and inventory management.",
+    highlights: ["Cart, checkout and order tracking", "Wishlist and coupons", "Admin panel", "Inventory management"],
     description: "Full e-commerce platform with cart, checkout, order tracking, wishlist, coupons, admin panel and inventory management.",
     tech_stack: ["React", "TypeScript", "Supabase", "Tailwind CSS"],
     category: "E-Commerce",
@@ -115,6 +130,9 @@ export const FALLBACK_PROJECTS: Project[] = [
   {
     id: "6",
     title: "Fake News Detection",
+    problem: "Misleading articles spread faster than they can be fact-checked by hand.",
+    solution: "A text-classification pipeline that converts articles with TF-IDF and compares Naive Bayes, Logistic Regression, LinearSVC and Random Forest classifiers to find the most accurate model.",
+    highlights: ["TF-IDF text features", "Four classifiers compared side by side", "Built with Scikit-learn, Pandas and NLP techniques"],
     description: "TF-IDF + multiple ML classifiers (Naive Bayes, Logistic Regression, LinearSVC, Random Forest) for fake news classification with high accuracy.",
     tech_stack: ["Python", "Scikit-learn", "NLP", "TF-IDF", "Pandas"],
     category: "ML/AI",
