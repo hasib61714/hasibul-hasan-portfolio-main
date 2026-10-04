@@ -2,29 +2,23 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { Menu, X, Code2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-
-const NAV_ITEMS = [
-  { label: "About",        href: "#about"        },
-  { label: "Experience",   href: "#experience"   },
-  { label: "Skills",       href: "#skills"       },
-  { label: "Projects",     href: "#projects"     },
-  { label: "Certificates", href: "#certificates" },
-  { label: "Resume",       href: "#resume"       },
-  { label: "Contact",      href: "#contact"      },
-];
+import { NAV_ITEMS, SITE } from "@/lib/site";
 
 export function Navbar() {
-  const [isScrolled,     setIsScrolled]     = useState(false);
-  const [isMobileOpen,   setIsMobileOpen]   = useState(false);
-  const [activeSection,  setActiveSection]  = useState("");
+  const [isScrolled,    setIsScrolled]    = useState(false);
+  const [isMobileOpen,  setIsMobileOpen]  = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 28, restDelta: 0.001 });
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -33,15 +27,14 @@ export function Navbar() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
         });
       },
-      { rootMargin: "-40% 0px -60% 0px" }
+      { rootMargin: "-40% 0px -55% 0px" }
     );
 
-    NAV_ITEMS.forEach(({ href }) => {
+    // The hero is observed too so scrolling back to the top clears the highlight.
+    ["#hero", ...NAV_ITEMS.map(({ href }) => href)].forEach((href) => {
       const el = document.querySelector(href);
       if (el) observer.observe(el);
     });
@@ -49,127 +42,137 @@ export function Navbar() {
     return () => observer.disconnect();
   }, []);
 
-  const handleNavClick = (href: string) => {
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsMobileOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isMobileOpen]);
+
+  const goTo = (href: string) => {
     setIsMobileOpen(false);
-    const el = document.querySelector(href);
-    el?.scrollIntoView({ behavior: "smooth" });
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <>
+      {/* Reading progress */}
+      <motion.div
+        aria-hidden
+        style={{ scaleX: progress }}
+        className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-gradient-to-r from-brand-500 via-accent-500 to-cyan-400"
+      />
+
       <motion.header
-        initial={{ y: -100, opacity: 0 }}
+        initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-4 px-4 pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-3 sm:pt-4 px-3 sm:px-4 pointer-events-none"
       >
-        {/* Floating pill container */}
         <div
           className={cn(
-            "pointer-events-auto flex items-center justify-between gap-4 px-4 py-2.5 rounded-2xl transition-all duration-500",
-            isScrolled
-              ? "glass-strong shadow-2xl shadow-black/10 dark:shadow-black/40 w-full max-w-4xl"
-              : "glass-card w-full max-w-5xl"
+            "pointer-events-auto flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 transition-all duration-500",
+            isScrolled ? "glass-strong max-w-4xl" : "glass-card max-w-5xl"
           )}
         >
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-            <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shadow-lg shadow-brand-500/30 group-hover:scale-110 transition-transform duration-300">
-              <Code2 className="w-5 h-5 text-white" />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-brand-400 to-accent-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
-            <span className="font-bold text-lg hidden sm:block">
-              <span className="gradient-text-static">Hasibul</span>
+          <Link href="/" aria-label={`${SITE.name} — home`} className="group flex items-center gap-2.5 shrink-0">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 shadow-lg shadow-brand-500/30 transition-transform duration-300 group-hover:scale-105">
+              <Code2 className="h-5 w-5 text-white" />
+            </span>
+            <span className="hidden sm:block text-base font-bold tracking-tight">
+              <span className="gradient-text-static">{SITE.brand}</span>
               <span className="text-gray-900 dark:text-white">.dev</span>
             </span>
           </Link>
 
-          {/* Desktop Nav — centered pill items */}
-          <nav className="hidden md:flex items-center gap-1 bg-gray-100/60 dark:bg-gray-800/50 rounded-xl px-1.5 py-1.5">
-            {NAV_ITEMS.map(({ label, href }) => (
-              <button
-                key={href}
-                onClick={() => handleNavClick(href)}
-                className={cn(
-                  "relative px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
-                  activeSection === href.slice(1)
-                    ? "text-white"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                )}
-              >
-                {activeSection === href.slice(1) && (
-                  <motion.div
-                    layoutId="active-pill"
-                    className="absolute inset-0 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 shadow-sm"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">{label}</span>
-              </button>
-            ))}
+          <nav aria-label="Primary" className="hidden lg:flex items-center gap-0.5 rounded-xl bg-gray-100/70 dark:bg-white/[0.05] p-1">
+            {NAV_ITEMS.map(({ label, href }) => {
+              const active = activeSection === href.slice(1);
+              return (
+                <button
+                  key={href}
+                  type="button"
+                  onClick={() => goTo(href)}
+                  aria-current={active ? "true" : undefined}
+                  className={cn(
+                    "relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200",
+                    active
+                      ? "text-white"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="active-pill"
+                      className="absolute inset-0 rounded-lg bg-gradient-to-b from-brand-500 to-brand-600 shadow-sm"
+                      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10">{label}</span>
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Right side */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <ThemeToggle />
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => handleNavClick("#hire")}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white text-sm font-semibold shadow-lg shadow-brand-500/30 transition-all duration-200"
-            >
-              Hire Me
-            </motion.button>
             <button
-              onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="md:hidden p-2 rounded-xl glass-card"
-              aria-label="Toggle menu"
+              type="button"
+              onClick={() => goTo("#hire")}
+              className="hidden sm:inline-flex items-center rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 ring-1 ring-inset ring-white/15 transition-all hover:from-brand-400 hover:-translate-y-0.5"
             >
-              {isMobileOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-              </button>
+              Hire me
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsMobileOpen((v) => !v)}
+              className="lg:hidden grid h-9 w-9 place-items-center rounded-xl border border-gray-200/80 dark:border-white/10 bg-white/60 dark:bg-white/[0.04]"
+              aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileOpen}
+              aria-controls="mobile-menu"
+            >
+              {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
       </motion.header>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.97 }}
-            animate={{ opacity: 1,  y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.97 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed top-20 left-4 right-4 z-30 glass-strong rounded-2xl shadow-2xl shadow-black/15 md:hidden overflow-hidden"
+          <motion.nav
+            id="mobile-menu"
+            aria-label="Mobile"
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="fixed top-[4.25rem] left-3 right-3 z-30 glass-strong rounded-2xl lg:hidden overflow-hidden"
           >
-            <div className="p-3 flex flex-col gap-1">
+            <div className="flex flex-col gap-1 p-2">
               {NAV_ITEMS.map(({ label, href }) => (
                 <button
                   key={href}
-                  onClick={() => handleNavClick(href)}
+                  type="button"
+                  onClick={() => goTo(href)}
                   className={cn(
-                    "w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                    "w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors",
                     activeSection === href.slice(1)
                       ? "bg-brand-500 text-white"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/[0.06]"
                   )}
                 >
                   {label}
                 </button>
               ))}
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-1">
-                <button
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white text-sm font-semibold shadow-lg"
-                  onClick={() => handleNavClick("#hire")}
-                >
-                  Hire Me
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => goTo("#hire")}
+                className="mt-1 w-full rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 py-3 text-sm font-semibold text-white"
+              >
+                Hire me
+              </button>
             </div>
-          </motion.div>
+          </motion.nav>
         )}
       </AnimatePresence>
     </>

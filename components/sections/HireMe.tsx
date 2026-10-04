@@ -4,33 +4,25 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Briefcase, DollarSign, Clock, MessageSquare, User, Mail } from "lucide-react";
+import { Briefcase, CheckCircle2, MessageSquare, User, Mail, Clock, ShieldCheck, Globe2 } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Input";
+import { Input, Select, Textarea } from "@/components/ui/Input";
+import { Honeypot } from "@/components/ui/Honeypot";
+import { hireSchema, type HireInput } from "@/lib/validation";
 import toast from "react-hot-toast";
-
-const hireSchema = z.object({
-  name:         z.string().min(2, "Name must be at least 2 characters"),
-  email:        z.string().email("Please enter a valid email"),
-  company:      z.string().optional(),
-  project_type: z.string().min(1, "Please select a project type"),
-  budget:       z.string().min(1, "Please select a budget range"),
-  timeline:     z.string().optional(),
-  message:      z.string().min(20, "Message must be at least 20 characters"),
-});
-
-type HireFormData = z.infer<typeof hireSchema>;
 
 const PROJECT_TYPES = [
   "Web Application",
-  "Mobile App",
+  "SaaS / Internal Tool",
   "E-Commerce",
-  "Landing Page",
-  "API Development",
-  "UI/UX Design",
-  "Consulting",
+  "Landing Page / Marketing Site",
+  "API / Backend Development",
+  "Machine Learning / AI",
+  "AR/VR",
+  "Mobile App",
+  "Consulting / Code Review",
+  "Full-time Role",
   "Other",
 ];
 
@@ -40,7 +32,7 @@ const BUDGET_RANGES = [
   "$1,000 – $5,000",
   "$5,000 – $10,000",
   "$10,000+",
-  "Let's Discuss",
+  "Let's discuss",
 ];
 
 const TIMELINES = [
@@ -51,6 +43,12 @@ const TIMELINES = [
   "Flexible",
 ];
 
+const PERKS = [
+  { icon: Clock,       title: "Reply within 24 hours", desc: "Every serious inquiry gets a thoughtful response." },
+  { icon: Globe2,      title: "Works across time zones", desc: "Based in GMT+6 with flexible overlap for EU & US teams." },
+  { icon: ShieldCheck, title: "Secure by default",     desc: "Typed, tested and reviewed code with security in mind." },
+];
+
 export function HireMe() {
   const [submitted, setSubmitted] = useState(false);
 
@@ -59,21 +57,24 @@ export function HireMe() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<HireFormData>({ resolver: zodResolver(hireSchema) });
+  } = useForm<HireInput>({ resolver: zodResolver(hireSchema) });
 
-  const onSubmit = async (data: HireFormData) => {
+  const onSubmit = async (data: HireInput) => {
     try {
       const res = await fetch("/api/hire", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to send");
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Failed to send");
+      }
       setSubmitted(true);
       reset();
-      toast.success("Your request has been sent! I'll be in touch soon.");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.success("Request sent! I'll be in touch soon.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     }
   };
 
@@ -81,131 +82,117 @@ export function HireMe() {
     <section id="hire" className="section-padding bg-white dark:bg-gray-950">
       <div className="container-max">
         <SectionHeader
-          badge="Hire Me"
-          title="Let&apos;s Work"
-          highlight="Together"
-          subtitle="Have a project in mind? I&apos;d love to help bring it to life."
+          badge="Hire me"
+          title="Let's build something"
+          highlight="great together"
+          subtitle="Tell me about your project or role. I work with startups, agencies and product teams around the world."
         />
 
-        <div className="max-w-3xl mx-auto">
-          {submitted ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="glass-card rounded-2xl p-12 text-center"
-            >
-              <div className="text-6xl mb-6">🎉</div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                Request Sent!
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
-                Thank you for reaching out. I&apos;ll review your project details and get back to you
-                within 24 hours.
-              </p>
-              <Button onClick={() => setSubmitted(false)}>Submit Another Request</Button>
-            </motion.div>
-          ) : (
-            <motion.form
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              onSubmit={handleSubmit(onSubmit)}
-              className="glass-card rounded-2xl p-8 space-y-6"
-            >
-              <div className="grid sm:grid-cols-2 gap-6">
-                <Input
-                  label="Your Name *"
-                  placeholder="John Doe"
-                  leftIcon={<User className="w-4 h-4" />}
-                  error={errors.name?.message}
-                  {...register("name")}
-                />
-                <Input
-                  label="Email Address *"
-                  type="email"
-                  placeholder="john@example.com"
-                  leftIcon={<Mail className="w-4 h-4" />}
-                  error={errors.email?.message}
-                  {...register("email")}
-                />
-              </div>
-
-              <Input
-                label="Company / Organization"
-                placeholder="Acme Inc. (optional)"
-                leftIcon={<Briefcase className="w-4 h-4" />}
-                {...register("company")}
-              />
-
-              <div className="grid sm:grid-cols-2 gap-6">
-                {/* Project Type */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Project Type *
-                  </label>
-                  <select
-                    className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    {...register("project_type")}
-                  >
-                    <option value="">Select type...</option>
-                    {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  {errors.project_type && (
-                    <p className="text-xs text-red-500">{errors.project_type.message}</p>
-                  )}
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+          <ul className="space-y-4 lg:pt-2">
+            {PERKS.map(({ icon: Icon, title, desc }) => (
+              <li key={title} className="card-premium flex gap-4 rounded-2xl p-5">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-md">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">{title}</p>
+                  <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">{desc}</p>
                 </div>
+              </li>
+            ))}
+          </ul>
 
-                {/* Budget */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Budget Range *
-                  </label>
-                  <select
-                    className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    {...register("budget")}
-                  >
-                    <option value="">Select budget...</option>
-                    {BUDGET_RANGES.map((b) => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                  {errors.budget && (
-                    <p className="text-xs text-red-500">{errors.budget.message}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Timeline */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Timeline
-                </label>
-                <select
-                  className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  {...register("timeline")}
-                >
-                  <option value="">Select timeline...</option>
-                  {TIMELINES.map((t) => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-
-              <Textarea
-                label="Project Description *"
-                placeholder="Tell me about your project, goals, and any specific requirements..."
-                rows={5}
-                error={errors.message?.message}
-                {...register("message")}
-              />
-
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                isLoading={isSubmitting}
-                leftIcon={<MessageSquare className="w-5 h-5" />}
+          <div>
+            {submitted ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                role="status"
+                className="card-premium rounded-2xl p-10 text-center sm:p-12"
               >
-                Send Hire Request
-              </Button>
-            </motion.form>
-          )}
+                <CheckCircle2 className="mx-auto mb-5 h-14 w-14 text-emerald-500" />
+                <h3 className="mb-3 text-2xl font-bold text-gray-900 dark:text-white">Request sent!</h3>
+                <p className="mb-6 text-gray-600 dark:text-gray-400">
+                  Thank you for reaching out. I&apos;ll review your details and get back to you within 24 hours.
+                </p>
+                <Button onClick={() => setSubmitted(false)}>Submit another request</Button>
+              </motion.div>
+            ) : (
+              <motion.form
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                onSubmit={handleSubmit(onSubmit)}
+                noValidate
+                className="card-premium relative space-y-5 rounded-2xl p-6 sm:p-8"
+              >
+                <Honeypot {...register("website")} />
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Input
+                    label="Your name *"
+                    placeholder="Jane Doe"
+                    autoComplete="name"
+                    leftIcon={<User className="h-4 w-4" />}
+                    error={errors.name?.message}
+                    {...register("name")}
+                  />
+                  <Input
+                    label="Email address *"
+                    type="email"
+                    placeholder="jane@company.com"
+                    autoComplete="email"
+                    leftIcon={<Mail className="h-4 w-4" />}
+                    error={errors.email?.message}
+                    {...register("email")}
+                  />
+                </div>
+
+                <Input
+                  label="Company / organization"
+                  placeholder="Acme Inc. (optional)"
+                  autoComplete="organization"
+                  leftIcon={<Briefcase className="h-4 w-4" />}
+                  {...register("company")}
+                />
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Select label="Project type *" error={errors.project_type?.message} {...register("project_type")}>
+                    <option value="">Select type…</option>
+                    {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </Select>
+                  <Select label="Budget (USD) *" error={errors.budget?.message} {...register("budget")}>
+                    <option value="">Select budget…</option>
+                    {BUDGET_RANGES.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </Select>
+                </div>
+
+                <Select label="Timeline" {...register("timeline")}>
+                  <option value="">Select timeline…</option>
+                  {TIMELINES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </Select>
+
+                <Textarea
+                  label="Project description *"
+                  placeholder="Tell me about your goals, the problem you're solving and any technical requirements…"
+                  rows={5}
+                  error={errors.message?.message}
+                  {...register("message")}
+                />
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  isLoading={isSubmitting}
+                  leftIcon={<MessageSquare className="h-5 w-5" />}
+                >
+                  Send hire request
+                </Button>
+              </motion.form>
+            )}
+          </div>
         </div>
       </div>
     </section>

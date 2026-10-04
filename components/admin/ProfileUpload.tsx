@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Upload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import toast from "react-hot-toast";
+import { validateUpload } from "@/lib/upload";
 
 export function ProfileUpload() {
   const [uploading, setUploading] = useState(false);
@@ -17,6 +18,9 @@ export function ProfileUpload() {
   }, []);
 
   const handleUpload = async (file: File) => {
+    const problem = await validateUpload(file, "image");
+    if (problem) { toast.error(problem); return; }
+
     const supabase = createClient();
     setUploading(true);
     setHasError(false);
@@ -56,16 +60,17 @@ export function ProfileUpload() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Hero section এ এই ছবি দেখাবে।
+            This photo is shown in the hero section of your portfolio. Use a square JPG, PNG or WebP up to 5 MB.
           </p>
           <label className="cursor-pointer inline-block">
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               className="hidden"
               disabled={uploading}
               onChange={(e) => {
                 const file = e.target.files?.[0];
+                e.target.value = "";
                 if (file) handleUpload(file);
               }}
             />

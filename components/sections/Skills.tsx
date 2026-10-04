@@ -1,52 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Monitor, Server, Database, Rocket, Brain, Code2, Shield, Glasses } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { createClient } from "@/lib/supabase/client";
 import type { Skill } from "@/types";
 import type { LucideIcon } from "lucide-react";
-
-const FALLBACK_SKILLS: Skill[] = [
-  // Languages
-  { id: "1",  name: "C / C++",                  category: "Languages", proficiency: 72, order_index: 1,  created_at: "" },
-  { id: "2",  name: "Java",                      category: "Languages", proficiency: 72, order_index: 2,  created_at: "" },
-  { id: "3",  name: "Python",                    category: "Languages", proficiency: 88, order_index: 3,  created_at: "" },
-  { id: "4",  name: "JavaScript",                category: "Languages", proficiency: 90, order_index: 4,  created_at: "" },
-  { id: "5",  name: "TypeScript",                category: "Languages", proficiency: 90, order_index: 5,  created_at: "" },
-  // Frontend
-  { id: "6",  name: "React.js",                  category: "Frontend",  proficiency: 92, order_index: 6,  created_at: "" },
-  { id: "7",  name: "Next.js 14",                category: "Frontend",  proficiency: 90, order_index: 7,  created_at: "" },
-  { id: "8",  name: "HTML5 / CSS3",              category: "Frontend",  proficiency: 92, order_index: 8,  created_at: "" },
-  { id: "9",  name: "Tailwind CSS",              category: "Frontend",  proficiency: 90, order_index: 9,  created_at: "" },
-  // Backend
-  { id: "10", name: "Laravel",                   category: "Backend",   proficiency: 85, order_index: 10, created_at: "" },
-  { id: "11", name: "Node.js / Express.js",      category: "Backend",   proficiency: 82, order_index: 11, created_at: "" },
-  { id: "12", name: "FastAPI",                   category: "Backend",   proficiency: 78, order_index: 12, created_at: "" },
-  { id: "13", name: "REST API Design",           category: "Backend",   proficiency: 80, order_index: 13, created_at: "" },
-  // AI / ML
-  { id: "14", name: "Scikit-learn",              category: "ML/AI",     proficiency: 78, order_index: 14, created_at: "" },
-  { id: "15", name: "Pandas / NumPy",            category: "ML/AI",     proficiency: 80, order_index: 15, created_at: "" },
-  { id: "16", name: "NLP / TF-IDF",             category: "ML/AI",     proficiency: 75, order_index: 16, created_at: "" },
-  { id: "17", name: "Feature Engineering",       category: "ML/AI",     proficiency: 72, order_index: 17, created_at: "" },
-  // Database
-  { id: "18", name: "MySQL / PostgreSQL",        category: "Database",  proficiency: 85, order_index: 18, created_at: "" },
-  { id: "19", name: "MongoDB",                   category: "Database",  proficiency: 80, order_index: 19, created_at: "" },
-  { id: "20", name: "Supabase (Realtime)",       category: "Database",  proficiency: 80, order_index: 20, created_at: "" },
-  // AR / VR
-  { id: "21", name: "Unity",                     category: "AR/VR",     proficiency: 70, order_index: 21, created_at: "" },
-  { id: "22", name: "XR Development",            category: "AR/VR",     proficiency: 68, order_index: 22, created_at: "" },
-  // Security
-  { id: "23", name: "Web Pentesting",            category: "Security",  proficiency: 72, order_index: 23, created_at: "" },
-  { id: "24", name: "SQL Injection / OSINT",     category: "Security",  proficiency: 70, order_index: 24, created_at: "" },
-  { id: "25", name: "Linux OS / Forensics",      category: "Security",  proficiency: 70, order_index: 25, created_at: "" },
-  // Tools
-  { id: "26", name: "Git / GitHub",              category: "Tools",     proficiency: 90, order_index: 26, created_at: "" },
-  { id: "27", name: "VS Code / Postman",         category: "Tools",     proficiency: 88, order_index: 27, created_at: "" },
-  { id: "28", name: "Vercel / Netlify",          category: "Tools",     proficiency: 80, order_index: 28, created_at: "" },
-  { id: "29", name: "Prisma / Capacitor",        category: "Tools",     proficiency: 74, order_index: 29, created_at: "" },
-];
 
 const CATEGORY_META: Record<string, { gradient: string; bg: string; icon: LucideIcon }> = {
   Languages: { gradient: "from-indigo-500 to-blue-500",   bg: "bg-indigo-500/10 dark:bg-indigo-500/15", icon: Code2    },
@@ -67,20 +25,11 @@ function proficiencyLabel(p: number) {
   return              { label: "Beginner",       dots: 1 };
 }
 
-export function Skills() {
-  const [skills, setSkills] = useState<Skill[]>(FALLBACK_SKILLS);
+interface SkillsProps {
+  skills: Skill[];
+}
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("skills")
-      .select("*")
-      .order("order_index")
-      .then(({ data }) => {
-        if (data && data.length > 0) setSkills(data);
-      });
-  }, []);
-
+export function Skills({ skills }: SkillsProps) {
   // Group by category
   const grouped = skills.reduce<Record<string, Skill[]>>((acc, skill) => {
     if (!acc[skill.category]) acc[skill.category] = [];
@@ -96,10 +45,10 @@ export function Skills() {
 
       <div className="container-max">
         <SectionHeader
-          badge="My Skills"
+          badge="Skills"
           title="Technical"
-          highlight="Expertise"
-          subtitle="A comprehensive overview of technologies and tools I work with daily."
+          highlight="expertise"
+          subtitle="The languages, frameworks and tools I use to design, build and ship software."
         />
 
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -138,14 +87,15 @@ export function Skills() {
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ delay: catIdx * 0.07 + i * 0.04 }}
-                        title={`${skill.name} — ${label} (${skill.proficiency}%)`}
-                        className={`group flex items-center gap-2 px-3 py-1.5 rounded-xl ${meta.bg} border border-white/10 dark:border-white/5 hover:scale-105 transition-transform duration-200 cursor-default`}
+                        title={`${skill.name} — ${label}`}
+                        className={`group flex items-center gap-2 px-3 py-1.5 rounded-xl ${meta.bg} border border-black/5 dark:border-white/5 hover:scale-105 transition-transform duration-200 cursor-default`}
                       >
                         <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
                           {skill.name}
+                          <span className="sr-only"> — {label}</span>
                         </span>
                         {/* Proficiency dots */}
-                        <div className="flex gap-0.5 flex-shrink-0">
+                        <div aria-hidden className="flex gap-0.5 flex-shrink-0">
                           {Array.from({ length: 5 }).map((_, d) => (
                             <div
                               key={d}
@@ -172,7 +122,7 @@ export function Skills() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="flex flex-wrap justify-center gap-4 mt-10 text-xs text-gray-400 dark:text-gray-500"
+          aria-hidden className="flex flex-wrap justify-center gap-4 mt-10 text-xs text-gray-500 dark:text-gray-500"
         >
           {[
             { dots: 1, label: "Beginner" },

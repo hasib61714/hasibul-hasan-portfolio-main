@@ -29,14 +29,14 @@ const EXPERIENCES: ExperienceItem[] = [
     type: "work",
     title: "Software Engineer (Full-Time)",
     organization: "Red Data (Pvt.) Ltd.",
-    location: "134 Gulshan Ave, Dhaka 1212",
+    location: "Dhaka, Bangladesh",
     period: "Feb 2026 – Present",
     current: true,
     description: [
-      "Full-time Software Engineer at a BTRC-licensed ISP contributing to enterprise-grade web systems and infrastructure.",
+      "Full-time Software Engineer at a licensed internet service provider, contributing to enterprise-grade web systems and infrastructure.",
       "Promoted from Intern to permanent Software Engineer after demonstrated performance and delivery.",
       "Building and maintaining enterprise web solutions, REST APIs, and internal tooling.",
-      "Working in an agile team under CEO Moin Uddin Ahmed; supervised by Rukonuzzaman, Software Engineer.",
+      "Working in an agile team: code reviews, sprint planning and cross-functional delivery with product and operations.",
     ],
     tech: ["React", "Next.js", "TypeScript", "Laravel", "Supabase", "PostgreSQL", "REST APIs", "Tailwind CSS"],
     color: "from-brand-500 to-cyan-500",
@@ -67,7 +67,7 @@ const EXPERIENCES: ExperienceItem[] = [
     current: true,
     description: [
       "Leading business development, client acquisition, partnerships and team coordination.",
-      "Managing full-time operations alongside technical career — driving growth strategy and client relations.",
+      "Running day-to-day operations alongside my engineering career — growth strategy, client relations and process improvement.",
     ],
     tech: ["Business Development", "Client Management", "Team Leadership"],
     color: "from-amber-500 to-orange-500",
@@ -96,10 +96,9 @@ const EXPERIENCES: ExperienceItem[] = [
     period: "2022 – Present",
     current: true,
     description: [
-      "Final-year student (Student ID: 222002023) specializing in software engineering and machine learning.",
+      "Final-year student specializing in software engineering and machine learning.",
       "Core coursework: Data Structures & Algorithms, Machine Learning, DBMS, Software Engineering, Computer Networks.",
       "Working on thesis related to explainable AI and health prediction systems.",
-      "Active participant in university tech clubs and programming competitions.",
     ],
     tech: ["Python", "Java", "C++", "Data Structures", "Algorithms", "Machine Learning", "Statistics"],
     color: "from-green-500 to-emerald-500",
@@ -107,26 +106,26 @@ const EXPERIENCES: ExperienceItem[] = [
   {
     id: "6",
     type: "education",
-    title: "HSC — Higher Secondary Certificate",
+    title: "Higher Secondary Certificate (HSC)",
     organization: "Govt. Ananda Mohan College",
     location: "Mymensingh, Bangladesh",
     period: "2020",
     description: [
-      "Completed Higher Secondary Certificate (EIIN: 111914).",
-      "Achieved GPA 5.00 — Golden A+.",
+      "Higher secondary education in Science.",
+      "Graduated with a perfect GPA of 5.00 / 5.00.",
     ],
     color: "from-blue-500 to-indigo-500",
   },
   {
     id: "7",
     type: "education",
-    title: "SSC — Secondary School Certificate",
+    title: "Secondary School Certificate (SSC)",
     organization: "Imam Bari High School",
     location: "Sherpur, Bangladesh",
     period: "2017",
     description: [
-      "Completed Secondary School Certificate (EIIN: 113831).",
-      "Achieved GPA 5.00 — Golden A+.",
+      "Secondary education in Science.",
+      "Graduated with a perfect GPA of 5.00 / 5.00.",
     ],
     color: "from-teal-500 to-cyan-500",
   },
@@ -146,18 +145,20 @@ export function Experience() {
       <div className="container-max">
         <SectionHeader
           badge="Experience"
-          title="My"
-          highlight="Journey"
-          subtitle="Professional experience and academic background that shaped my skills."
+          title="Where I've worked"
+          highlight="& studied"
+          subtitle="Professional experience and academic background behind the way I build software."
         />
 
         {/* Tab switcher */}
         <div className="flex justify-center mb-12">
-          <div className="inline-flex bg-gray-100/80 dark:bg-gray-800/80 rounded-2xl p-1.5 gap-1">
+          <div role="tablist" aria-label="Experience categories" className="inline-flex bg-gray-100/80 dark:bg-white/[0.05] rounded-2xl p-1.5 gap-1">
             {(["work", "education"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
                 onClick={() => setActiveTab(tab)}
                 className={`relative flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                   activeTab === tab
@@ -168,7 +169,7 @@ export function Experience() {
                 {activeTab === tab && (
                   <motion.div
                     layoutId="experience-tab"
-                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 shadow-lg shadow-brand-500/30"
+                    className="absolute inset-0 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 shadow-lg shadow-brand-500/30"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -182,7 +183,7 @@ export function Experience() {
         </div>
 
         {/* Timeline */}
-        <div ref={ref} className="relative max-w-3xl mx-auto">
+        <div ref={ref} role="tabpanel" className="relative max-w-3xl mx-auto">
           {/* Vertical line */}
           <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-brand-500/60 via-brand-300/30 to-transparent hidden sm:block" />
 

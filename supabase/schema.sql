@@ -1,9 +1,12 @@
 -- ============================================================
 -- Hasibul Hasan Portfolio — Supabase Database Schema
--- Run this in Supabase SQL Editor (in order)
+-- Run this in the Supabase SQL Editor.
+--
+-- The script is idempotent: it is safe to run on a fresh project AND to
+-- re-run on an existing one to upgrade it (security policies, storage
+-- buckets/policies and constraints are all re-applied).
 -- ============================================================
 
--- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ─────────────────────────────────────────────
@@ -99,6 +102,37 @@ CREATE TABLE IF NOT EXISTS hire_requests (
 );
 
 -- ─────────────────────────────────────────────
+-- 7. ADMIN USERS
+-- Only users listed here are treated as admins. Having a Supabase account
+-- is NOT enough — this is what makes sign-ups harmless.
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS admin_users (
+  user_id    UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+-- Deliberately no policies: the table is only writable from the SQL editor / service role.
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (SELECT 1 FROM public.admin_users WHERE user_id = auth.uid());
+$$;
+
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated;
+
+-- ► Register yourself as the admin (create the user in Authentication → Users first).
+--   Change the e-mail if needed, then re-run this statement.
+INSERT INTO admin_users (user_id)
+SELECT id FROM auth.users WHERE lower(email) = lower('mh.hasan14200@gmail.com')
+ON CONFLICT DO NOTHING;
+
+-- ─────────────────────────────────────────────
 -- Auto-update updated_at via trigger
 -- ─────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -109,6 +143,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_projects_updated_at  ON projects;
+DROP TRIGGER IF EXISTS update_documents_updated_at ON documents;
+
 CREATE TRIGGER update_projects_updated_at
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -116,6 +153,42 @@ CREATE TRIGGER update_projects_updated_at
 CREATE TRIGGER update_documents_updated_at
   BEFORE UPDATE ON documents
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ─────────────────────────────────────────────
+-- Data integrity (NOT VALID = enforced for new/changed rows, existing rows untouched)
+-- ─────────────────────────────────────────────
+ALTER TABLE projects      DROP CONSTRAINT IF EXISTS projects_urls_http;
+ALTER TABLE projects      ADD  CONSTRAINT projects_urls_http CHECK (
+  (image_url  IS NULL OR image_url  ~* '^https?://[^[:space:]]+$') AND
+  (live_url   IS NULL OR live_url   ~* '^https?://[^[:space:]]+$') AND
+  (github_url IS NULL OR github_url ~* '^https?://[^[:space:]]+$')
+) NOT VALID;
+
+ALTER TABLE certificates  DROP CONSTRAINT IF EXISTS certificates_urls_http;
+ALTER TABLE certificates  ADD  CONSTRAINT certificates_urls_http CHECK (
+  (credential_url IS NULL OR credential_url ~* '^https?://[^[:space:]]+$') AND
+  (image_url      IS NULL OR image_url      ~* '^https?://[^[:space:]]+$') AND
+  (file_url       IS NULL OR file_url       ~* '^https?://[^[:space:]]+$')
+) NOT VALID;
+
+ALTER TABLE documents     DROP CONSTRAINT IF EXISTS documents_url_http;
+ALTER TABLE documents     ADD  CONSTRAINT documents_url_http CHECK (
+  file_url ~* '^https?://[^[:space:]]+$'
+) NOT VALID;
+
+ALTER TABLE contacts      DROP CONSTRAINT IF EXISTS contacts_lengths;
+ALTER TABLE contacts      ADD  CONSTRAINT contacts_lengths CHECK (
+  char_length(name) BETWEEN 1 AND 100 AND char_length(email) <= 255 AND
+  char_length(message) BETWEEN 1 AND 2000 AND (subject IS NULL OR char_length(subject) <= 200)
+) NOT VALID;
+
+ALTER TABLE hire_requests DROP CONSTRAINT IF EXISTS hire_requests_lengths;
+ALTER TABLE hire_requests ADD  CONSTRAINT hire_requests_lengths CHECK (
+  char_length(name) BETWEEN 1 AND 100 AND char_length(email) <= 255 AND
+  char_length(message) BETWEEN 1 AND 3000 AND char_length(project_type) <= 100 AND
+  char_length(budget) <= 50 AND (company IS NULL OR char_length(company) <= 200) AND
+  (timeline IS NULL OR char_length(timeline) <= 100)
+) NOT VALID;
 
 -- ─────────────────────────────────────────────
 -- Row Level Security (RLS)
@@ -127,34 +200,77 @@ ALTER TABLE documents     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contacts      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hire_requests ENABLE ROW LEVEL SECURITY;
 
--- Public read policies
-CREATE POLICY "Public can read projects"      ON projects      FOR SELECT USING (true);
-CREATE POLICY "Public can read skills"        ON skills        FOR SELECT USING (true);
-CREATE POLICY "Public can read certificates"  ON certificates  FOR SELECT USING (true);
-CREATE POLICY "Public can read active docs"   ON documents     FOR SELECT USING (is_active = true);
+-- Remove every policy from earlier versions of this schema
+DROP POLICY IF EXISTS "Public can read projects"     ON projects;
+DROP POLICY IF EXISTS "Public can read skills"       ON skills;
+DROP POLICY IF EXISTS "Public can read certificates" ON certificates;
+DROP POLICY IF EXISTS "Public can read active docs"  ON documents;
+DROP POLICY IF EXISTS "Public can submit contact"    ON contacts;
+DROP POLICY IF EXISTS "Public can submit hire"       ON hire_requests;
+DROP POLICY IF EXISTS "Admin full access projects"     ON projects;
+DROP POLICY IF EXISTS "Admin full access skills"       ON skills;
+DROP POLICY IF EXISTS "Admin full access certificates" ON certificates;
+DROP POLICY IF EXISTS "Admin full access documents"    ON documents;
+DROP POLICY IF EXISTS "Admin full access contacts"     ON contacts;
+DROP POLICY IF EXISTS "Admin full access hire"         ON hire_requests;
 
--- Public can insert contacts and hire requests
-CREATE POLICY "Public can submit contact"     ON contacts      FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public can submit hire"        ON hire_requests FOR INSERT WITH CHECK (true);
+-- Public read access to portfolio content
+CREATE POLICY "Public can read projects"     ON projects     FOR SELECT USING (true);
+CREATE POLICY "Public can read skills"       ON skills       FOR SELECT USING (true);
+CREATE POLICY "Public can read certificates" ON certificates FOR SELECT USING (true);
+CREATE POLICY "Public can read active docs"  ON documents    FOR SELECT USING (is_active = true);
 
--- Authenticated (admin) full access
-CREATE POLICY "Admin full access projects"      ON projects      FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "Admin full access skills"        ON skills        FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "Admin full access certificates"  ON certificates  FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "Admin full access documents"     ON documents     FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "Admin full access contacts"      ON contacts      FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "Admin full access hire"          ON hire_requests FOR ALL USING (auth.role() = 'authenticated');
+-- Contact / hire submissions go through the server API routes (service role, with
+-- validation + rate limiting). There is intentionally NO public INSERT policy, so
+-- nobody can bypass the API by calling Supabase directly with the public anon key.
+
+-- Admin-only write access (and read access to private inbox tables)
+CREATE POLICY "Admin full access projects"     ON projects      FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access skills"       ON skills        FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access certificates" ON certificates  FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access documents"    ON documents     FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access contacts"     ON contacts      FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access hire"         ON hire_requests FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- ─────────────────────────────────────────────
--- Seed data (optional — remove in production)
+-- Storage buckets (public read, admin-only write, size + MIME limits)
 -- ─────────────────────────────────────────────
-INSERT INTO skills (name, category, proficiency, order_index) VALUES
-  ('React / Next.js',  'Frontend', 95, 1),
-  ('TypeScript',       'Frontend', 90, 2),
-  ('Tailwind CSS',     'Frontend', 92, 3),
-  ('Node.js',          'Backend',  85, 4),
-  ('PostgreSQL',       'Database', 80, 5),
-  ('Supabase',         'Database', 88, 6),
-  ('Docker',           'DevOps',   72, 7),
-  ('Git / GitHub',     'DevOps',   90, 8)
-ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES
+  ('documents',    'documents',    true, 10485760, ARRAY['application/pdf']),
+  ('certificates', 'certificates', true, 10485760, ARRAY['application/pdf','image/jpeg','image/png','image/webp']),
+  ('projects',     'projects',     true,  5242880, ARRAY['image/jpeg','image/png','image/webp']),
+  ('profile',      'profile',      true,  5242880, ARRAY['image/jpeg','image/png','image/webp'])
+ON CONFLICT (id) DO UPDATE SET
+  public             = EXCLUDED.public,
+  file_size_limit    = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "Portfolio files are public"      ON storage.objects;
+DROP POLICY IF EXISTS "Admin can upload portfolio files" ON storage.objects;
+DROP POLICY IF EXISTS "Admin can update portfolio files" ON storage.objects;
+DROP POLICY IF EXISTS "Admin can delete portfolio files" ON storage.objects;
+
+CREATE POLICY "Portfolio files are public" ON storage.objects
+  FOR SELECT USING (bucket_id IN ('documents','certificates','projects','profile'));
+
+CREATE POLICY "Admin can upload portfolio files" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id IN ('documents','certificates','projects','profile') AND public.is_admin()
+  );
+
+CREATE POLICY "Admin can update portfolio files" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id IN ('documents','certificates','projects','profile') AND public.is_admin()
+  );
+
+CREATE POLICY "Admin can delete portfolio files" ON storage.objects
+  FOR DELETE USING (
+    bucket_id IN ('documents','certificates','projects','profile') AND public.is_admin()
+  );
+
+-- ─────────────────────────────────────────────
+-- Seed data
+-- ─────────────────────────────────────────────
+-- None on purpose: until a table has rows, the site renders its built-in
+-- content (lib/fallback-data.ts). Adding your first row in the admin panel
+-- replaces that section's fallback content with your own data.

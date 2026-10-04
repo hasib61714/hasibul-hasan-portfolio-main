@@ -4,213 +4,196 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Mail,
-  MessageCircle,
-  MapPin,
-  Send,
-  User,
-  Phone,
-} from "lucide-react";
+import { Mail, MessageCircle, MapPin, Send, User, Copy, Check } from "lucide-react";
+import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
+import { Honeypot } from "@/components/ui/Honeypot";
+import { contactSchema, type ContactInput } from "@/lib/validation";
+import { SITE, whatsappUrl } from "@/lib/site";
+import { mailtoHref } from "@/lib/utils";
 import toast from "react-hot-toast";
-import { WHATSAPP_NUMBER, PHONE_NUMBER, EMAIL_ADDRESS } from "@/lib/utils";
-
-const contactSchema = z.object({
-  name:    z.string().min(2, "Name must be at least 2 characters"),
-  email:   z.string().email("Please enter a valid email"),
-  subject: z.string().optional(),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
-
-type ContactFormData = z.infer<typeof contactSchema>;
 
 const CONTACT_INFO = [
-  {
-    icon:  Mail,
-    label: "Email",
-    values: [EMAIL_ADDRESS],
-    href:   `mailto:${EMAIL_ADDRESS}`,
-    color:  "from-brand-500 to-brand-600",
-  },
-  {
-    icon:  Phone,
-    label: "Phone",
-    values: [`+${WHATSAPP_NUMBER}`, `+${PHONE_NUMBER}`],
-    href:   `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Hasibul%2C%20I%20found%20your%20portfolio%20and%20would%20like%20to%20connect!`,
-    color:  "from-green-500 to-emerald-600",
-  },
-  {
-    icon:  MapPin,
-    label: "Location",
-    values: ["Dag-18325, Faidabad Chowrasta,", "Dakshinkhan, Uttara, Dhaka-1230"],
-    href:   "https://maps.google.com/?q=Dakshinkhan,Uttara,Dhaka,Bangladesh",
-    color:  "from-accent-500 to-accent-600",
-  },
+  { icon: Mail,          label: "Email",    value: SITE.email,                         href: mailtoHref(SITE.email), color: "from-brand-500 to-brand-600" },
+  { icon: MessageCircle, label: "WhatsApp", value: `+${SITE.whatsapp}`,                href: whatsappUrl(),          color: "from-emerald-500 to-emerald-600" },
+  { icon: LinkedInIcon,  label: "LinkedIn", value: "linkedin.com/in/hasibulhasan",     href: SITE.linkedin,          color: "from-sky-500 to-blue-600" },
+  { icon: GitHubIcon,    label: "GitHub",   value: "github.com/hasib61714",            href: SITE.github,            color: "from-gray-600 to-gray-800" },
+  { icon: MapPin,        label: "Location", value: `${SITE.location} (${SITE.timezone})`, href: undefined,           color: "from-accent-500 to-accent-600" },
 ];
 
 export function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) });
+  } = useForm<ContactInput>({ resolver: zodResolver(contactSchema) });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async (data: ContactInput) => {
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Failed");
+      }
       setSubmitted(true);
       reset();
       toast.success("Message sent! I'll get back to you soon.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send message. Please try again.");
+    }
+  };
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(SITE.email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to send message. Please try again.");
+      toast.error("Couldn't copy — please copy it manually.");
     }
   };
 
   return (
-    <section id="contact" className="section-padding bg-gray-50 dark:bg-gray-900/50">
+    <section id="contact" className="section-padding overflow-hidden bg-gray-50/70 dark:bg-gray-900/40">
       <div className="container-max">
         <SectionHeader
           badge="Contact"
-          title="Get In"
-          highlight="Touch"
-          subtitle="Have a question or want to work together? I'd love to hear from you."
+          title="Get in"
+          highlight="touch"
+          subtitle="A question, an opportunity or just want to say hello? My inbox is always open."
         />
 
-        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
-          {/* Left — contact info */}
+        <div className="mx-auto grid max-w-5xl grid-cols-1 items-stretch gap-8 lg:grid-cols-2">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -24 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="card-premium rounded-2xl p-6 flex flex-col gap-6"
+            className="card-premium flex flex-col gap-6 rounded-2xl p-6"
           >
-            {/* Heading */}
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Let's Start a Conversation
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">
-                Whether you're looking to hire, collaborate on a project, or just want to
-                say hello — my inbox is always open!
+              <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Let&apos;s start a conversation</h3>
+              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                Whether you&apos;re hiring, planning a project or want to collaborate, reach out on
+                whichever channel suits you. I usually reply within 24 hours.
               </p>
             </div>
 
-            {/* Contact cards */}
-            <div className="flex flex-col gap-3 flex-1">
-              {CONTACT_INFO.map(({ icon: Icon, label, values, href, color }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200/60 dark:border-gray-700/40 group transition-all duration-200 flex-1"
-                >
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5">{label}</p>
-                    {values.map((v) => (
-                      <p key={v} className="font-bold text-gray-900 dark:text-white leading-snug">{v}</p>
-                    ))}
-                  </div>
-                </a>
-              ))}
-            </div>
+            <ul className="flex flex-1 flex-col gap-3">
+              {CONTACT_INFO.map(({ icon: Icon, label, value, href, color }) => {
+                const inner = (
+                  <>
+                    <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${color} text-white shadow-md transition-transform duration-300 group-hover:scale-105`}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="mb-0.5 block font-mono text-[11px] uppercase tracking-widest text-gray-500">{label}</span>
+                      <span className="block text-sm font-semibold [overflow-wrap:anywhere] leading-snug sm:text-base text-gray-900 dark:text-white">{value}</span>
+                    </span>
+                  </>
+                );
+                const cls = "group flex flex-1 items-center gap-3 rounded-xl border border-gray-200/70 bg-gray-50 p-3 transition-colors dark:border-white/[0.07] dark:bg-white/[0.03] sm:gap-4 sm:p-4";
+                return (
+                  <li key={label} className="flex">
+                    {href ? (
+                      <a
+                        href={href}
+                        target={href.startsWith("mailto:") ? undefined : "_blank"}
+                        rel="noopener noreferrer"
+                        className={`${cls} hover:border-brand-400/50 hover:bg-white dark:hover:bg-white/[0.06]`}
+                      >
+                        {inner}
+                      </a>
+                    ) : (
+                      <div className={cls}>{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
 
-            {/* WhatsApp CTA — pinned to bottom */}
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Hasibul%2C%20I%20found%20your%20portfolio%20and%20would%20like%20to%20connect!`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={copyEmail}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-brand-400/60 hover:text-brand-600 dark:border-white/10 dark:text-gray-300 dark:hover:text-brand-300"
             >
-              <Button
-                size="lg"
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/25 hover:shadow-green-500/40"
-                leftIcon={<MessageCircle className="w-5 h-5" />}
-              >
-                Chat on WhatsApp
-              </Button>
-            </a>
+              {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              {copied ? "Email copied" : "Copy email address"}
+            </button>
           </motion.div>
 
-          {/* Right — contact form */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 24 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="flex flex-col"
           >
             {submitted ? (
-              <div className="card-premium rounded-2xl p-10 text-center flex-1 flex flex-col items-center justify-center">
-                <div className="text-5xl mb-4">✉️</div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Message Sent!
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+              <div role="status" className="card-premium flex flex-1 flex-col items-center justify-center rounded-2xl p-10 text-center">
+                <span className="mb-4 grid h-14 w-14 place-items-center rounded-full bg-emerald-500/10 text-emerald-500">
+                  <Check className="h-7 w-7" />
+                </span>
+                <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">Message sent!</h3>
+                <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
                   Thanks for reaching out. I typically reply within 24 hours.
                 </p>
-                <Button variant="outline" onClick={() => setSubmitted(false)}>
-                  Send Another Message
-                </Button>
+                <Button variant="outline" onClick={() => setSubmitted(false)}>Send another message</Button>
               </div>
             ) : (
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="card-premium rounded-2xl p-6 flex flex-col gap-5 flex-1"
+                noValidate
+                className="card-premium relative flex flex-1 flex-col gap-5 rounded-2xl p-6"
               >
-                <div className="grid sm:grid-cols-2 gap-5">
+                <Honeypot {...register("website")} />
+                <div className="grid gap-5 sm:grid-cols-2">
                   <Input
-                    label="Your Name *"
-                    placeholder="John Doe"
-                    leftIcon={<User className="w-4 h-4" />}
+                    label="Your name *"
+                    placeholder="Jane Doe"
+                    autoComplete="name"
+                    leftIcon={<User className="h-4 w-4" />}
                     error={errors.name?.message}
                     {...register("name")}
                   />
                   <Input
                     label="Email *"
                     type="email"
-                    placeholder="john@example.com"
-                    leftIcon={<Mail className="w-4 h-4" />}
+                    placeholder="jane@company.com"
+                    autoComplete="email"
+                    leftIcon={<Mail className="h-4 w-4" />}
                     error={errors.email?.message}
                     {...register("email")}
                   />
                 </div>
-                <Input
-                  label="Subject"
-                  placeholder="What's this about?"
-                  {...register("subject")}
-                />
-                <div className="flex-1 flex flex-col">
+                <Input label="Subject" placeholder="What's this about?" {...register("subject")} />
+                <div className="flex flex-1 flex-col">
                   <Textarea
                     label="Message *"
-                    placeholder="Tell me what you have in mind..."
-                    rows={5}
+                    placeholder="Tell me what you have in mind…"
+                    rows={6}
                     error={errors.message?.message}
-                    className="flex-1"
+                    containerClassName="flex-1"
+                    className="min-h-36 flex-1"
                     {...register("message")}
                   />
                 </div>
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full mt-auto"
+                  className="mt-auto w-full"
                   isLoading={isSubmitting}
-                  leftIcon={<Send className="w-4 h-4" />}
+                  leftIcon={<Send className="h-4 w-4" />}
                 >
-                  Send Message
+                  Send message
                 </Button>
               </form>
             )}

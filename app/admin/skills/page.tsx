@@ -47,7 +47,8 @@ export default function AdminSkillsPage() {
 
   const fetchSkills = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase.from("skills").select("*").order("order_index");
+    const { data, error } = await supabase.from("skills").select("*").order("order_index");
+    if (error) toast.error("Failed to load skills: " + error.message);
     setSkills(data ?? []);
     setLoading(false);
   }, []);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -8,6 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Lock, Mail, Code2, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { isAdmin } from "@/lib/auth";
+import { safeRedirectPath } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import toast from "react-hot-toast";
@@ -22,7 +25,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 function LoginForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo   = searchParams.get("redirectedFrom") || "/admin";
+  const redirectTo   = safeRedirectPath(searchParams.get("redirectedFrom"));
+  const forbidden    = searchParams.get("error") === "forbidden";
   const [showPass, setShowPass] = useState(false);
 
   const {
@@ -43,13 +47,34 @@ function LoginForm() {
       return;
     }
 
+    // A valid account is not enough — it must be registered as an admin.
+    if (!(await isAdmin(supabase))) {
+      await supabase.auth.signOut();
+      toast.error("This account is not authorised to access the admin panel.");
+      return;
+    }
+
     toast.success("Welcome back!");
     router.push(redirectTo);
     router.refresh();
   };
 
+  const handleSignOut = async () => {
+    await createClient().auth.signOut();
+    router.replace("/auth/login");
+    router.refresh();
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {forbidden && (
+        <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          This account is signed in but is not registered as an admin.{" "}
+          <button type="button" onClick={handleSignOut} className="font-semibold underline underline-offset-2 hover:text-red-200">
+            Sign out
+          </button>
+        </div>
+      )}
       <Input
         label="Email Address"
         type="email"
@@ -113,9 +138,9 @@ export default function LoginPage() {
           </Suspense>
 
           <div className="mt-6 text-center">
-            <a href="/" className="text-sm text-gray-400 hover:text-brand-400 transition-colors">
+            <Link href="/" className="text-sm text-gray-400 hover:text-brand-400 transition-colors">
               ← Back to Portfolio
-            </a>
+            </Link>
           </div>
         </div>
       </motion.div>

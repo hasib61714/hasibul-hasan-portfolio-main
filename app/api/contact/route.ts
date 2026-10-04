@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
-import { z } from "zod";
+import { createServiceClient } from "@/lib/supabase/server";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { contactSchema } from "@/lib/validation";
 
-const contactSchema = z.object({
-  name:    z.string().min(2).max(100),
-  email:   z.string().email().max(255),
-  subject: z.string().max(200).optional(),
-  message: z.string().min(10).max(2000),
-});
+const HOUR = 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   try {
+    // Reject cross-site form posts (browsers always send Origin on cross-origin POSTs).
+    const origin = request.headers.get("origin");
+    if (origin && new URL(origin).host !== request.headers.get("host")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    if (!rateLimit(`contact:${clientIp(request.headers)}`, 5, HOUR)) {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
     const body = await request.json();
     const parsed = contactSchema.safeParse(body);
-
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Invalid input", details: parsed.error.flatten() },
@@ -21,11 +26,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createAdminClient();
+    // Honeypot tripped: pretend success so bots learn nothing.
+    if (parsed.data.website) {
+      return NextResponse.json({ success: true }, { status: 201 });
+    }
+
+    const supabase = createServiceClient();
+    if (!supabase) {
+      console.error("Contact API: SUPABASE_SERVICE_ROLE_KEY / NEXT_PUBLIC_SUPABASE_URL not configured");
+      return NextResponse.json({ error: "Messaging is temporarily unavailable" }, { status: 503 });
+    }
+
+    // Durable per-sender limit (works across serverless instances).
+    const email = parsed.data.email.toLowerCase();
+    const { count } = await supabase
+      .from("contacts")
+      .select("id", { count: "exact", head: true })
+      .eq("email", email)
+      .gte("created_at", new Date(Date.now() - HOUR).toISOString());
+    if ((count ?? 0) >= 3) {
+      return NextResponse.json({ error: "Too many messages from this address. Please try again later." }, { status: 429 });
+    }
+
     const { error } = await supabase.from("contacts").insert({
       name:    parsed.data.name,
-      email:   parsed.data.email,
-      subject: parsed.data.subject ?? null,
+      email,
+      subject: parsed.data.subject || null,
       message: parsed.data.message,
       is_read: false,
     });

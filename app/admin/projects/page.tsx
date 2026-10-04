@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { createClient } from "@/lib/supabase/client";
 import toast from "react-hot-toast";
+import { safeUrl } from "@/lib/utils";
+import { buildStoragePath, storagePathFromUrl, validateUpload } from "@/lib/upload";
+import { optionalHttpUrl } from "@/lib/validation";
 import type { Project } from "@/types";
 
 const projectSchema = z.object({
@@ -21,9 +24,9 @@ const projectSchema = z.object({
   long_description: z.string().optional(),
   tech_stack:       z.string().min(1, "Add at least one technology"),
   category:         z.string().min(1, "Category is required"),
-  image_url:        z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  live_url:         z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  github_url:       z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  image_url:        optionalHttpUrl,
+  live_url:         optionalHttpUrl,
+  github_url:       optionalHttpUrl,
   featured:         z.boolean().optional().default(false),
   order_index:      z.number().int().optional().default(0),
 });
@@ -43,15 +46,15 @@ export default function AdminProjectsPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    setValue,
   } = useForm<ProjectFormData>({ resolver: zodResolver(projectSchema) });
 
   const fetchProjects = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("projects")
       .select("*")
       .order("order_index");
+    if (error) toast.error("Failed to load projects: " + error.message);
     setProjects(data ?? []);
     setLoading(false);
   }, []);
@@ -81,17 +84,22 @@ export default function AdminProjectsPage() {
     setModalOpen(true);
   };
 
-  const handleImageUpload = async (file: File, projectId: string) => {
+  const handleImageUpload = async (file: File, project: Project) => {
+    const problem = await validateUpload(file, "image");
+    if (problem) { toast.error(problem); return; }
+
     const supabase = createClient();
-    setUploading(projectId);
-    const ext  = file.name.split(".").pop();
-    const path = `${projectId}/cover.${ext}`;
+    setUploading(project.id);
+    const path = buildStoragePath(project.id, file);
     const { error } = await supabase.storage
       .from("projects")
-      .upload(path, file, { upsert: true });
-    if (error) { toast.error("Upload failed"); setUploading(null); return; }
+      .upload(path, file, { contentType: file.type });
+    if (error) { toast.error("Upload failed: " + error.message); setUploading(null); return; }
     const { data: url } = supabase.storage.from("projects").getPublicUrl(path);
-    await supabase.from("projects").update({ image_url: url.publicUrl, updated_at: new Date().toISOString() }).eq("id", projectId);
+    const { error: dbError } = await supabase.from("projects").update({ image_url: url.publicUrl, updated_at: new Date().toISOString() }).eq("id", project.id);
+    if (dbError) { toast.error("Failed to save image: " + dbError.message); setUploading(null); return; }
+    const previous = storagePathFromUrl(project.image_url, "projects");
+    if (previous) await supabase.storage.from("projects").remove([previous]);
     toast.success("Image uploaded!");
     setUploading(null);
     fetchProjects();
@@ -102,9 +110,9 @@ export default function AdminProjectsPage() {
     const payload = {
       ...data,
       tech_stack: data.tech_stack.split(",").map((t) => t.trim()).filter(Boolean),
-      image_url:  data.image_url  || null,
-      live_url:   data.live_url   || null,
-      github_url: data.github_url || null,
+      image_url:  data.image_url?.trim()  || null,
+      live_url:   data.live_url?.trim()   || null,
+      github_url: data.github_url?.trim() || null,
     };
 
     if (editing) {
@@ -128,9 +136,15 @@ export default function AdminProjectsPage() {
     if (!confirm("Are you sure you want to delete this project?")) return;
     setDeleting(id);
     const supabase = createClient();
+    const target = projects.find((p) => p.id === id);
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (error) { toast.error("Failed to delete"); }
-    else { toast.success("Project deleted"); fetchProjects(); }
+    else {
+      const path = storagePathFromUrl(target?.image_url, "projects");
+      if (path) await supabase.storage.from("projects").remove([path]);
+      toast.success("Project deleted");
+      fetchProjects();
+    }
     setDeleting(null);
   };
 
@@ -163,11 +177,12 @@ export default function AdminProjectsPage() {
                   <label className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 transition-colors cursor-pointer group">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleImageUpload(file, project.id);
+                        e.target.value = "";
+                        if (file) handleImageUpload(file, project);
                       }}
                     />
                     {uploading === project.id ? (
@@ -197,8 +212,8 @@ export default function AdminProjectsPage() {
                   </div>
                   <div className="flex items-center gap-2 pt-1 border-t border-gray-100 dark:border-gray-800">
                     <div className="flex gap-2 flex-1">
-                      {project.live_url   && <a href={project.live_url}   target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-brand-500 transition-colors"><ExternalLink className="w-3.5 h-3.5" /></a>}
-                      {project.github_url && <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-brand-500 transition-colors"><Github className="w-3.5 h-3.5" /></a>}
+                      {safeUrl(project.live_url)   && <a href={safeUrl(project.live_url)}   target="_blank" rel="noopener noreferrer" aria-label="Live site" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-brand-500 transition-colors"><ExternalLink className="w-3.5 h-3.5" /></a>}
+                      {safeUrl(project.github_url) && <a href={safeUrl(project.github_url)} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-brand-500 transition-colors"><Github className="w-3.5 h-3.5" /></a>}
                     </div>
                     <button onClick={() => openEdit(project)} className="p-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/20 text-gray-500 hover:text-brand-500 transition-colors">
                       <Pencil className="w-3.5 h-3.5" />

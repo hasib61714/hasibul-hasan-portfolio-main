@@ -6,7 +6,8 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate } from "@/lib/utils";
+import { formatDate, safeUrl } from "@/lib/utils";
+import { buildStoragePath, storagePathFromUrl, validateUpload } from "@/lib/upload";
 import toast from "react-hot-toast";
 import type { Document } from "@/types";
 
@@ -17,7 +18,8 @@ export default function AdminDocumentsPage() {
 
   const fetchDocs = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase.from("documents").select("*").order("updated_at", { ascending: false });
+    const { data, error } = await supabase.from("documents").select("*").order("updated_at", { ascending: false });
+    if (error) toast.error("Failed to load documents: " + error.message);
     setDocuments(data ?? []);
     setLoading(false);
   }, []);
@@ -25,14 +27,17 @@ export default function AdminDocumentsPage() {
   useEffect(() => { fetchDocs(); }, [fetchDocs]);
 
   const handleUpload = async (file: File, type: "cv" | "cover_letter") => {
+    const problem = await validateUpload(file, "pdf");
+    if (problem) { toast.error(problem); return; }
+
     const supabase = createClient();
     setUploading(type);
 
-    const ext  = file.name.split(".").pop();
-    const path = `${type}/latest.${ext}`;
+    // Unique path per upload so older versions in the history keep working.
+    const path = buildStoragePath(type, file);
     const { error: uploadError } = await supabase.storage
       .from("documents")
-      .upload(path, file, { upsert: true });
+      .upload(path, file, { contentType: file.type });
 
     if (uploadError) {
       toast.error("Upload failed: " + uploadError.message);
@@ -67,9 +72,13 @@ export default function AdminDocumentsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this document?")) return;
     const supabase = createClient();
+    const target = documents.find((d) => d.id === id);
     const { error } = await supabase.from("documents").delete().eq("id", id);
-    if (error) toast.error("Failed to delete");
-    else { toast.success("Deleted"); fetchDocs(); }
+    if (error) { toast.error("Failed to delete"); return; }
+    const path = storagePathFromUrl(target?.file_url, "documents");
+    if (path) await supabase.storage.from("documents").remove([path]);
+    toast.success("Deleted");
+    fetchDocs();
   };
 
   const setActive = async (id: string, type: string) => {
@@ -95,10 +104,11 @@ export default function AdminDocumentsPage() {
       <label className="cursor-pointer block">
         <input
           type="file"
-          accept=".pdf"
+          accept="application/pdf"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
+            e.target.value = "";
             if (file) handleUpload(file, type);
           }}
         />
@@ -140,7 +150,7 @@ export default function AdminDocumentsPage() {
                   <CheckCircle className="w-4 h-4" />
                 </button>
               )}
-              <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-brand-500 transition-colors">
+              <a href={safeUrl(doc.file_url)} target="_blank" rel="noopener noreferrer" aria-label="Open file" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-brand-500 transition-colors">
                 <ExternalLink className="w-4 h-4" />
               </a>
               <button onClick={() => handleDelete(doc.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors">

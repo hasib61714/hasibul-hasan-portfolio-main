@@ -1,119 +1,97 @@
 import Link from "next/link";
-import { Code2, Mail, ArrowUpRight } from "lucide-react";
+import { Code2, Mail, ArrowUpRight, ArrowUp } from "lucide-react";
 import { GitHubIcon, LinkedInIcon, FacebookIcon } from "@/components/ui/SocialIcons";
-import { GITHUB_URL, LINKEDIN_URL, FACEBOOK_URL, EMAIL_ADDRESS } from "@/lib/utils";
+import { NAV_ITEMS, SITE } from "@/lib/site";
+import { mailtoHref } from "@/lib/utils";
 
 const SOCIAL_LINKS = [
-  { icon: GitHubIcon,   href: GITHUB_URL,               label: "GitHub"   },
-  { icon: LinkedInIcon, href: LINKEDIN_URL,              label: "LinkedIn" },
-  { icon: FacebookIcon, href: FACEBOOK_URL,              label: "Facebook" },
-  { icon: Mail,         href: `mailto:${EMAIL_ADDRESS}`, label: "Email"    },
+  { icon: GitHubIcon,   href: SITE.github,                label: "GitHub"   },
+  { icon: LinkedInIcon, href: SITE.linkedin,              label: "LinkedIn" },
+  { icon: FacebookIcon, href: SITE.facebook,              label: "Facebook" },
+  { icon: Mail,         href: mailtoHref(SITE.email),     label: "Email"    },
 ];
 
-const FOOTER_LINKS = [
-  { label: "About",        href: "#about"        },
-  { label: "Experience",   href: "#experience"   },
-  { label: "Projects",     href: "#projects"     },
-  { label: "Skills",       href: "#skills"       },
-  { label: "Certificates", href: "#certificates" },
-  { label: "Resume",       href: "#resume"       },
-  { label: "Contact",      href: "#contact"      },
-];
+const STACK = ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS", "Supabase", "Framer Motion"];
 
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-gray-950 overflow-hidden">
-      {/* gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent-600/8 rounded-full blur-3xl pointer-events-none" />
-      {/* top border glow */}
+    <footer className="relative overflow-hidden bg-gray-950 text-gray-400">
+      <div className="pointer-events-none absolute top-0 left-1/4 h-96 w-96 rounded-full bg-brand-600/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-accent-600/10 blur-3xl" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
-
+      <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
         {/* CTA banner */}
-        <div className="relative rounded-2xl bg-gradient-to-r from-brand-600/20 to-accent-600/20 border border-brand-500/20 p-8 mb-14 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-transparent" />
-          <div className="relative">
-            <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-1">Open to work</p>
-            <h3 className="text-xl font-bold text-white">Let&apos;s build something great together</h3>
-            <p className="text-sm text-gray-400 mt-1">Available for freelance & full-time opportunities</p>
+        <div className="relative mb-14 flex flex-col items-start justify-between gap-6 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-500/15 via-accent-500/10 to-transparent p-8 sm:flex-row sm:items-center">
+          <div>
+            <p className="eyebrow !text-brand-300 mb-2">Let&apos;s work together</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-white text-balance">
+              Have a product to build or a team to join? Let&apos;s talk.
+            </h3>
+            <p className="mt-1 text-sm text-gray-400">{SITE.availability} · {SITE.timezone}</p>
           </div>
           <a
-            href={`mailto:${EMAIL_ADDRESS}`}
-            className="relative flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-lg shadow-brand-500/30"
+            href={mailtoHref(SITE.email)}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-all hover:-translate-y-0.5 hover:bg-brand-50"
           >
-            Get in Touch <ArrowUpRight className="w-4 h-4" />
+            Get in touch <ArrowUpRight className="h-4 w-4" />
           </a>
         </div>
 
-        {/* main grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-12">
-
-          {/* Brand — 5 cols */}
+        <div className="mb-12 grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
-            <Link href="/" className="flex items-center gap-2.5 mb-5 group w-fit">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shadow-lg shadow-brand-500/30 group-hover:scale-110 transition-transform">
-                <Code2 className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-xl">
-                <span className="gradient-text-static">Hasibul</span>
+            <Link href="/" className="group mb-5 flex w-fit items-center gap-2.5">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 shadow-lg shadow-brand-500/30 transition-transform group-hover:scale-105">
+                <Code2 className="h-5 w-5 text-white" />
+              </span>
+              <span className="text-xl font-bold tracking-tight">
+                <span className="gradient-text-static">{SITE.brand}</span>
                 <span className="text-white">.dev</span>
               </span>
             </Link>
-            <p className="text-sm text-gray-400 leading-relaxed max-w-sm mb-6">
-              Full-Stack Developer & ML enthusiast crafting high-performance web apps,
-              AR/VR experiences, and intelligent systems.
+            <p className="mb-6 max-w-sm text-sm leading-relaxed">
+              Software engineer building performant web applications, machine-learning
+              systems and immersive AR/VR experiences for teams around the world.
             </p>
-            {/* Social icons */}
             <div className="flex gap-2">
               {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
                   href={href}
-                  target="_blank"
+                  target={href.startsWith("mailto:") ? undefined : "_blank"}
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-10 h-10 rounded-xl bg-gray-800/80 border border-gray-700/50 flex items-center justify-center text-gray-400 hover:text-brand-400 hover:border-brand-500/50 hover:bg-brand-500/10 transition-all duration-200"
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-gray-400 transition-all hover:border-brand-500/50 hover:bg-brand-500/10 hover:text-brand-300"
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Spacer — 1 col */}
-          <div className="hidden md:block md:col-span-1" />
+          <div className="hidden md:col-span-1 md:block" />
 
-          {/* Links — 3 cols */}
-          <div className="md:col-span-3">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-5">Navigation</h3>
+          <nav aria-label="Footer" className="md:col-span-3">
+            <h3 className="mb-5 text-xs font-bold uppercase tracking-widest text-gray-500">Navigation</h3>
             <ul className="space-y-3">
-              {FOOTER_LINKS.map(({ label, href }) => (
+              {NAV_ITEMS.map(({ label, href }) => (
                 <li key={href}>
-                  <a
-                    href={href}
-                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors flex items-center gap-1.5 group w-fit"
-                  >
-                    <span className="w-0 group-hover:w-3 h-px bg-brand-500 transition-all duration-200 rounded-full" />
+                  <a href={href} className="group flex w-fit items-center gap-1.5 text-sm transition-colors hover:text-brand-300">
+                    <span className="h-px w-0 rounded-full bg-brand-400 transition-all duration-200 group-hover:w-3" />
                     {label}
                   </a>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Tech stack — 3 cols */}
           <div className="md:col-span-3">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-5">Built With</h3>
+            <h3 className="mb-5 text-xs font-bold uppercase tracking-widest text-gray-500">Built with</h3>
             <div className="flex flex-wrap gap-2">
-              {["Next.js 15", "TypeScript", "Tailwind CSS", "Supabase", "Framer Motion", "Vercel"].map((tech) => (
-                <span
-                  key={tech}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-gray-800/80 border border-gray-700/50 text-gray-400"
-                >
+              {STACK.map((tech) => (
+                <span key={tech} className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-xs text-gray-400">
                   {tech}
                 </span>
               ))}
@@ -121,19 +99,13 @@ export function Footer() {
           </div>
         </div>
 
-        {/* bottom bar */}
-        <div className="pt-6 border-t border-gray-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-600">
-            © {year} Md.Hasibul Hasan. All rights reserved.
-          </p>
-          <p className="text-xs text-gray-600">
-            Designed &amp; Developed by <span className="text-brand-500 font-medium">Md.Hasibul Hasan</span>
-          </p>
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
+          <p className="text-xs text-gray-500">© {year} {SITE.name}. All rights reserved.</p>
+          <a href="#hero" className="inline-flex items-center gap-1.5 text-xs text-gray-500 transition-colors hover:text-brand-300">
+            Back to top <ArrowUp className="h-3.5 w-3.5" />
+          </a>
         </div>
-
       </div>
     </footer>
   );
 }
-
-

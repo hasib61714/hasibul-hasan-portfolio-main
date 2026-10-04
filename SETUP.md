@@ -26,31 +26,23 @@ npm install
 1. Go to [supabase.com](https://supabase.com) → New Project
 2. Choose a name, database password, and region
 
-### b) Run the Database Schema
+### b) Create the Admin User
+
+1. Supabase dashboard → **Authentication** → **Users** → **Add user** (or Invite) and confirm the e-mail
+2. **Authentication → Providers → Email** → turn **off** "Allow new users to sign up" so nobody else can create accounts
+
+### c) Run the Database Schema
 
 1. In Supabase dashboard → **SQL Editor** → **New Query**
-2. Copy the contents of [`supabase/schema.sql`](./supabase/schema.sql)
-3. Paste and click **Run**
+2. Copy the contents of [`supabase/schema.sql`](./supabase/schema.sql), paste and click **Run**
 
-This creates all 6 tables, RLS policies, and seed data.
+This creates all tables, Row Level Security policies, the four storage buckets
+(`documents`, `certificates`, `projects`, `profile`) with size/MIME limits and admin-only upload policies,
+and registers your admin account in `admin_users`.
 
-### c) Create Storage Buckets
-
-In Supabase dashboard → **Storage** → **New Bucket**, create these 3 buckets:
-
-| Bucket Name    | Public | Purpose                          |
-|----------------|--------|----------------------------------|
-| `documents`    | ✅ Yes | CV and Cover Letter PDF uploads  |
-| `certificates` | ✅ Yes | Certificate images and PDFs      |
-| `projects`     | ✅ Yes | Project screenshot images        |
-
-For each bucket, go to **Policies** → **New Policy** → allow `SELECT` for `public` role (or use the template "Give users access to their own folder").
-
-### d) Create an Admin User
-
-1. Supabase dashboard → **Authentication** → **Users** → **Invite User**
-2. Enter your email and confirm via the email link
-3. You'll use these credentials to log in at `/auth/login`
+- If your admin e-mail is not `mh.hasan14200@gmail.com`, edit it in the `INSERT INTO admin_users` statement and run it again.
+- The script is **idempotent** — re-run it whenever you pull an update to apply security fixes to an existing project.
+- Admin access is granted **only** to users in `admin_users`. A valid Supabase account alone is not enough.
 
 ---
 
@@ -68,8 +60,11 @@ Edit `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-# Optional: only needed if using service role (admin operations)
+# Required: used only on the server by the contact / hire API routes (never exposed to the browser)
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Your public site URL (used for SEO, sitemap and Open Graph). Optional on Vercel.
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
 Find these values in Supabase dashboard → **Project Settings** → **API**.
@@ -78,19 +73,28 @@ Find these values in Supabase dashboard → **Project Settings** → **API**.
 
 ## 4. Personalize Your Portfolio
 
-### Core Info — `lib/utils.ts`
+### Core Info — `lib/site.ts`
+
+All personal details live in one place:
 
 ```ts
-export const WHATSAPP_NUMBER = "8801XXXXXXXXX"; // your WhatsApp number
-export const EMAIL_ADDRESS   = "you@example.com";
-export const GITHUB_URL      = "https://github.com/yourusername";
-export const LINKEDIN_URL    = "https://linkedin.com/in/yourusername";
-export const TWITTER_URL     = "https://twitter.com/yourusername";
+export const SITE = {
+  name: "Md. Hasibul Hasan",
+  role: "Software & ML Engineer",
+  email: "you@example.com",
+  whatsapp: "8801XXXXXXXXX",   // international format, digits only
+  github: "https://github.com/yourusername",
+  linkedin: "https://linkedin.com/in/yourusername",
+  location: "Dhaka, Bangladesh",
+  timezone: "GMT+6",
+  availability: "Open to remote roles & contracts worldwide",
+  yearsExperience: "3+",
+};
 ```
 
 ### Hero Section — `components/sections/Hero.tsx`
-- Update name, title, subtitle, stats numbers
-- Replace the avatar placeholder with your actual image
+- Headline/description copy lives in the component; stats (projects, certifications) are computed from your data
+- Upload your photo from **Admin → Dashboard → Hero Profile Picture**
 
 ### About Section — `components/sections/About.tsx`
 - Update story paragraphs and expertise tags
@@ -128,6 +132,7 @@ In Vercel dashboard → Project → **Settings** → **Environment Variables**, 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SITE_URL` (your production URL)
 
 ---
 
@@ -137,7 +142,9 @@ In Vercel dashboard → Project → **Settings** → **Environment Variables**, 
 hasibul-hasan-portfolio/
 ├── app/
 │   ├── page.tsx                    # Public portfolio
-│   ├── layout.tsx                  # Root layout + SEO
+│   ├── layout.tsx                  # Root layout + SEO + JSON-LD
+│   ├── opengraph-image.tsx         # Generated social preview image
+│   ├── sitemap.ts / robots.ts      # SEO files
 │   ├── globals.css                 # Global styles + utilities
 │   ├── providers.tsx               # Theme + toast providers
 │   ├── auth/login/page.tsx         # Admin login
@@ -159,7 +166,11 @@ hasibul-hasan-portfolio/
 │   ├── admin/                      # AdminSidebar, AdminHeader, StatsCard
 │   └── ui/                         # Button, Card, Input, Badge, Modal, etc.
 ├── lib/
-│   ├── utils.ts                    # cn(), formatDate(), constants
+│   ├── site.ts                     # Personal details & site config
+│   ├── data.ts                     # Server-side data loading (+ fallbacks)
+│   ├── fallback-data.ts            # Built-in content until DB has rows
+│   ├── validation.ts / upload.ts   # Zod schemas, upload validation
+│   ├── utils.ts                    # cn(), safeUrl(), formatDate()
 │   └── supabase/
 │       ├── client.ts               # Browser Supabase client
 │       └── server.ts               # Server Supabase clients
@@ -181,6 +192,7 @@ hasibul-hasan-portfolio/
 | `documents`     | CV and Cover Letter file uploads     |
 | `contacts`      | Contact form submissions             |
 | `hire_requests` | Hire/project inquiry forms           |
+| `admin_users`   | Users allowed to use the admin panel |
 
 ---
 

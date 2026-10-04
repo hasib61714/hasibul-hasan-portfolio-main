@@ -1,5 +1,6 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { createClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -18,6 +19,9 @@ export default async function AdminLayout({
 
   if (!user) {
     redirect("/auth/login");
+  }
+  if (!(await isAdmin(supabase))) {
+    redirect("/auth/login?error=forbidden");
   }
 
   return (

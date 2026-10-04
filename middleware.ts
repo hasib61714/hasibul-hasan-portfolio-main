@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
+import { isAdmin } from "@/lib/auth";
 
 type SetAllCookies = Parameters<NonNullable<CookieMethodsServer["setAll"]>>[0];
 
@@ -39,24 +40,36 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
   const isLoginRoute = request.nextUrl.pathname === "/auth/login";
 
-  if (isAdminRoute && !user) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/auth/login";
-    redirectUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
+  if (isAdminRoute) {
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/auth/login";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Signed in but not an admin: never reveal the panel.
+    if (!(await isAdmin(supabase))) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/auth/login";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set("error", "forbidden");
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
-  if (isLoginRoute && user) {
+  if (isLoginRoute && user && (await isAdmin(supabase))) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/admin";
+    redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
   return supabaseResponse;
 }
 
+// Only the admin area and login need a session check — public pages stay fast and cacheable.
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/admin/:path*", "/auth/login"],
 };

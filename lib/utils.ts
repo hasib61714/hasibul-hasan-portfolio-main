@@ -6,15 +6,13 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-US", {
     year:  "numeric",
     month: "long",
     day:   "numeric",
   });
-}
-
-export function formatCurrency(amount: string): string {
-  return amount;
 }
 
 export function truncate(str: string, length: number): string {
@@ -22,16 +20,33 @@ export function truncate(str: string, length: number): string {
   return str.slice(0, length) + "…";
 }
 
-export function slugify(str: string): string {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+/**
+ * Returns the URL only when it is a plain http(s) link, otherwise undefined.
+ * Use for every URL that originates from the database before rendering it in an
+ * `href`/`src` — it blocks `javascript:`, `data:` and other dangerous schemes.
+ */
+export function safeUrl(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "#") return undefined;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
-export const WHATSAPP_NUMBER = "8801794517497";
-export const PHONE_NUMBER    = "880192195641";
-export const EMAIL_ADDRESS   = "mh.hasan14200@gmail.com";
-export const GITHUB_URL      = "https://github.com/hasib61714";
-export const LINKEDIN_URL    = "https://linkedin.com/in/hasibulhasan";
-export const FACEBOOK_URL    = "https://www.facebook.com/mhhasan2347";
+/** Builds a mailto: link with a correctly encoded subject. */
+export function mailtoHref(email: string, subject?: string): string {
+  const base = `mailto:${email}`;
+  return subject ? `${base}?subject=${encodeURIComponent(subject)}` : base;
+}
+
+/** Accepts only same-origin relative paths — prevents open redirects after login. */
+export function safeRedirectPath(path: string | null | undefined, fallback = "/admin"): string {
+  if (!path || !path.startsWith("/") || path.startsWith("//") || path.includes("\\")) {
+    return fallback;
+  }
+  return path;
+}
