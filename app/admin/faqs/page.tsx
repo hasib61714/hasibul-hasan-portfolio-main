@@ -2,6 +2,7 @@
 
 import { HelpCircle } from "lucide-react";
 import { CrudPage } from "@/components/admin/CrudPage";
+import { DEFAULT_FAQS } from "@/lib/defaults";
 import type { Faq } from "@/types";
 
 export default function AdminFaqsPage() {
@@ -14,6 +15,7 @@ export default function AdminFaqsPage() {
       icon={HelpCircle}
       orderField="order_index"
       orderBy={[{ column: "order_index" }]}
+      seedRows={DEFAULT_FAQS.map(({ question, answer, order_index }) => ({ question, answer, order_index }))}
       fields={[
         { name: "question", label: "Question", type: "text", required: true },
         { name: "answer", label: "Answer", type: "textarea", required: true, rows: 5 },

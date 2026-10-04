@@ -124,3 +124,35 @@ export const EXPERIENCES: ExperienceItem[] = [
   },
 ];
 
+
+export interface ExperienceRow {
+  id: string;
+  kind: TabType;
+  title: string;
+  organization: string;
+  location?: string | null;
+  period: string;
+  is_current: boolean;
+  description: string[];
+  tech: string[];
+  color: string;
+  link?: string | null;
+  order_index: number;
+}
+
+/** Converts a database row into the shape the timeline component renders. */
+export function fromRow(row: ExperienceRow): ExperienceItem {
+  return {
+    id: row.id,
+    type: row.kind,
+    title: row.title,
+    organization: row.organization,
+    location: row.location ?? "",
+    period: row.period,
+    current: row.is_current,
+    description: row.description ?? [],
+    tech: row.tech ?? [],
+    color: row.color,
+    link: row.link ?? undefined,
+  };
+}

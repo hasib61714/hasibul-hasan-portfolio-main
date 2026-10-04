@@ -7,30 +7,17 @@ import { ArrowRight, CalendarCheck, Download, Globe2, Mail, MapPin, Clock } from
 import { Magnetic } from "@/components/ui/Magnetic";
 import { WordReveal } from "@/components/ui/WordReveal";
 import { CountUp } from "@/components/ui/CountUp";
-import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
-import { SITE } from "@/lib/site";
+import { SocialIcon } from "@/components/ui/SocialIcon";
+import { useProfile } from "@/components/ProfileProvider";
+import { socialLinks } from "@/lib/profile-defaults";
 import { mailtoHref, safeUrl } from "@/lib/utils";
 
 interface HeroProps {
   avatarUrl: string | null;
   cvUrl?: string;
-  bookingUrl?: string;
-  openToWork?: boolean;
-  availabilityText?: string | null;
   projectCount: number;
   certificateCount: number;
 }
-
-const SOCIAL_LINKS = [
-  { icon: GitHubIcon,   href: SITE.github,            label: "GitHub"   },
-  { icon: LinkedInIcon, href: SITE.linkedin,          label: "LinkedIn" },
-  { icon: Mail,         href: mailtoHref(SITE.email), label: "Email"    },
-];
-
-const TECH_MARQUEE = [
-  "React", "Next.js", "TypeScript", "Node.js", "Laravel", "Python", "FastAPI",
-  "PostgreSQL", "Supabase", "Docker", "Tailwind CSS", "Scikit-learn", "Unity", "REST APIs",
-];
 
 const scrollTo = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -41,13 +28,18 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
 });
 
-export function Hero({ avatarUrl, cvUrl, bookingUrl, openToWork = true, availabilityText, projectCount, certificateCount }: HeroProps) {
+export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroProps) {
+  const profile = useProfile();
+  const bookingUrl = safeUrl(profile.bookingUrl);
+  const socials = socialLinks(profile, ["github", "linkedin", "twitter", "youtube", "instagram"]);
   const cvHref = safeUrl(cvUrl);
+  // Repeat short lists so the scrolling strip never shows gaps.
+  const marqueeItems = Array.from({ length: Math.max(1, Math.ceil(14 / Math.max(1, profile.techMarquee.length))) }).flatMap(() => profile.techMarquee);
   const portraitRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: portraitRef, offset: ["start end", "end start"] });
   const portraitY = useTransform(scrollYProgress, [0, 1], [24, -24]);
   const stats = [
-    { value: SITE.yearsExperience, label: "Years exp." },
+    { value: profile.yearsExperience, label: "Years exp." },
     { value: String(projectCount), label: "Projects" },
     { value: String(certificateCount), label: "Certificates" },
   ];
@@ -62,45 +54,43 @@ export function Hero({ avatarUrl, cvUrl, bookingUrl, openToWork = true, availabi
           {/* ── Copy ── */}
           <div className="space-y-7">
             <motion.div {...fadeUp(0)}>
-              {openToWork ? (
+              {profile.openToWork ? (
                 <span className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                   </span>
-                  {availabilityText || SITE.availability}
+                  {profile.availability}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-2.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300">
                   <span className="h-2 w-2 rounded-full bg-amber-500" />
-                  {availabilityText || "Currently booked — open to future projects"}
+                  Currently booked — open to future projects
                 </span>
               )}
             </motion.div>
 
             <motion.div {...fadeUp(0.08)} className="space-y-4">
-              <p className="eyebrow">Hi, I&apos;m {SITE.name}</p>
+              <p className="eyebrow">Hi, I&apos;m {profile.name}</p>
               <h1 className="text-balance text-4xl font-bold leading-[1.08] tracking-tight text-gray-900 dark:text-white sm:text-5xl xl:text-6xl">
                 <WordReveal
                   delay={0.15}
                   segments={[
-                    { text: "I build reliable web platforms" },
-                    { text: "& ML systems", className: "gradient-text accent-serif" },
-                    { text: "for teams worldwide." },
-                  ]}
+                    { text: profile.headlineBefore },
+                    { text: profile.headlineAccent, className: "gradient-text accent-serif" },
+                    { text: profile.headlineAfter },
+                  ].filter((s) => s.text.trim())}
                 />
               </h1>
             </motion.div>
 
             <motion.p {...fadeUp(0.16)} className="max-w-xl text-pretty text-lg leading-relaxed text-gray-600 dark:text-gray-400">
-              Software Engineer at Red Data with a full-stack focus — React, Next.js, Laravel and
-              Python — plus applied ML and AR/VR. I care about clean architecture, performance and
-              shipping things that hold up in production.
+              {profile.heroDescription}
             </motion.p>
 
             <motion.ul {...fadeUp(0.22)} className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-brand-500" />{SITE.location}</li>
-              <li className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4 text-brand-500" />{SITE.timezone} · async-friendly</li>
+              <li className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-brand-500" />{profile.location}</li>
+              <li className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4 text-brand-500" />{profile.timezone} · async-friendly</li>
               <li className="inline-flex items-center gap-1.5"><Globe2 className="h-4 w-4 text-brand-500" />Remote-first</li>
             </motion.ul>
 
@@ -158,18 +148,25 @@ export function Hero({ avatarUrl, cvUrl, bookingUrl, openToWork = true, availabi
             <motion.div {...fadeUp(0.34)} className="flex items-center gap-3">
               <span className="text-sm text-gray-500">Find me on</span>
               <div className="flex gap-2">
-                {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
+                {socials.map(({ key, href, label }) => (
                   <a
-                    key={label}
+                    key={key}
                     href={href}
-                    target={href.startsWith("mailto:") ? undefined : "_blank"}
+                    target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
                     className="grid h-9 w-9 place-items-center rounded-xl border border-gray-200 bg-white/70 text-gray-500 transition-all hover:-translate-y-0.5 hover:border-brand-500/50 hover:text-brand-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-400 dark:hover:text-brand-300"
                   >
-                    <Icon className="h-4 w-4" />
+                    <SocialIcon name={key} className="h-4 w-4" />
                   </a>
                 ))}
+                <a
+                  href={mailtoHref(profile.email)}
+                  aria-label="Email"
+                  className="grid h-9 w-9 place-items-center rounded-xl border border-gray-200 bg-white/70 text-gray-500 transition-all hover:-translate-y-0.5 hover:border-brand-500/50 hover:text-brand-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-400 dark:hover:text-brand-300"
+                >
+                  <Mail className="h-4 w-4" />
+                </a>
               </div>
             </motion.div>
           </div>
@@ -199,7 +196,7 @@ export function Hero({ avatarUrl, cvUrl, bookingUrl, openToWork = true, availabi
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
-                      alt={`Portrait of ${SITE.name}`}
+                      alt={`Portrait of ${profile.name}`}
                       fill
                       priority
                       sizes="(min-width: 1024px) 352px, 320px"
@@ -253,8 +250,8 @@ export function Hero({ avatarUrl, cvUrl, bookingUrl, openToWork = true, availabi
               aria-hidden={copy === 1}
               className="flex shrink-0 animate-marquee items-center gap-10 pr-10 group-hover:[animation-play-state:paused]"
             >
-              {TECH_MARQUEE.map((tech) => (
-                <li key={tech} className="whitespace-nowrap font-mono text-sm text-gray-500 dark:text-gray-400">
+              {marqueeItems.map((tech, ti) => (
+                <li key={`${tech}-${ti}`} className="whitespace-nowrap font-mono text-sm text-gray-500 dark:text-gray-400">
                   {tech}
                 </li>
               ))}

@@ -4,22 +4,25 @@ import { ArrowLeft } from "lucide-react";
 import { PrintButton } from "@/components/PrintButton";
 import { Navbar } from "@/components/layout/Navbar";
 import { getPortfolioData } from "@/lib/data";
-import { EXPERIENCES } from "@/lib/experience";
-import { SITE } from "@/lib/site";
+import { getProfile } from "@/lib/profile";
+import { profileHost } from "@/lib/profile-defaults";
 import { safeUrl } from "@/lib/utils";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Resume",
-  description: `Printable resume of ${SITE.name}, ${SITE.role}.`,
-  alternates: { canonical: "/resume" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const profile = await getProfile();
+  return {
+    title: "Resume",
+    description: `Printable resume of ${profile.name}, ${profile.role}.`,
+    alternates: { canonical: "/resume" },
+  };
+}
 
 export default async function ResumePage() {
-  const { projects, skills, certificates } = await getPortfolioData();
-  const work = EXPERIENCES.filter((e) => e.type === "work");
-  const education = EXPERIENCES.filter((e) => e.type === "education");
+  const { profile, projects, skills, certificates, experiences } = await getPortfolioData();
+  const work = experiences.filter((e) => e.type === "work");
+  const education = experiences.filter((e) => e.type === "education");
 
   const byCategory = skills.reduce<Record<string, string[]>>((acc, s) => {
     (acc[s.category] ??= []).push(s.name);
@@ -40,16 +43,16 @@ export default async function ResumePage() {
         {/* The sheet is always light so it prints well, whatever theme the visitor uses. */}
         <article className="mx-auto max-w-[52rem] rounded-2xl bg-white p-8 text-[13px] leading-relaxed text-gray-800 shadow-2xl ring-1 ring-black/5 print:max-w-none print:rounded-none print:p-0 print:shadow-none print:ring-0 sm:p-12">
           <header className="border-b border-gray-300 pb-5">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{SITE.name}</h1>
-            <p className="mt-1 text-base font-medium text-brand-700">{SITE.role}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{profile.name}</h1>
+            <p className="mt-1 text-base font-medium text-brand-700">{profile.role}</p>
             <p className="mt-3 text-gray-600">
-              {SITE.email} · {SITE.location} ({SITE.timezone}) · {SITE.github.replace("https://", "")} · {SITE.linkedin.replace("https://", "")}
+              {[profile.email, `${profile.location} (${profile.timezone})`, profile.github && profileHost(profile.github), profile.linkedin && profileHost(profile.linkedin)].filter(Boolean).join(" · ")}
             </p>
           </header>
 
           <section className="mt-6">
             <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-500">Summary</h2>
-            <p>{SITE.description}</p>
+            <p>{profile.seoDescription}</p>
           </section>
 
           <section className="mt-6">

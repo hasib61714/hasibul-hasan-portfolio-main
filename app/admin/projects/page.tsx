@@ -16,6 +16,8 @@ import toast from "react-hot-toast";
 import { safeUrl } from "@/lib/utils";
 import { buildStoragePath, storagePathFromUrl, validateUpload } from "@/lib/upload";
 import { optionalHttpUrl } from "@/lib/validation";
+import { ImportDefaultsCard } from "@/components/admin/ImportDefaultsCard";
+import { FALLBACK_PROJECTS, forImport } from "@/lib/fallback-data";
 import type { Project } from "@/types";
 
 const projectSchema = z.object({
@@ -214,6 +216,10 @@ export default function AdminProjectsPage() {
             Add Project
           </Button>
         </div>
+
+        {!loading && projects.length === 0 && (
+          <ImportDefaultsCard table="projects" rows={forImport(FALLBACK_PROJECTS)} onDone={fetchProjects} />
+        )}
 
         {loading ? (
           <LoadingSpinner />

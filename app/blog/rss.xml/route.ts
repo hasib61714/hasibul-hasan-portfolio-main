@@ -1,5 +1,6 @@
 import { getPublishedPosts } from "@/lib/posts";
-import { SITE, getSiteUrl } from "@/lib/site";
+import { getSiteUrl } from "@/lib/site";
+import { getProfile } from "@/lib/profile";
 
 export const revalidate = 3600;
 
@@ -8,7 +9,7 @@ const esc = (s: string) =>
 
 export async function GET() {
   const base = getSiteUrl();
-  const posts = await getPublishedPosts();
+  const [posts, profile] = await Promise.all([getPublishedPosts(), getProfile()]);
   const items = posts
     .map(
       (p) => `<item>
@@ -23,7 +24,7 @@ ${p.excerpt ? `<description>${esc(p.excerpt)}</description>` : ""}
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
-<title>${esc(SITE.name)} — Blog</title>
+<title>${esc(profile.name)} — Blog</title>
 <link>${base}/blog</link>
 <description>Notes on web development, machine learning and engineering.</description>
 <language>en</language>

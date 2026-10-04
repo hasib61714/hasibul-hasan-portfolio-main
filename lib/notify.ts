@@ -1,4 +1,4 @@
-import { SITE } from "@/lib/site";
+import { getProfile } from "@/lib/profile";
 
 interface Notification {
   subject: string;
@@ -19,12 +19,13 @@ export async function notifyOwner({ subject, text, replyTo }: Notification): Pro
   const key = process.env.RESEND_API_KEY;
   if (!key) return;
   try {
+    const profile = await getProfile();
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: process.env.NOTIFY_FROM || "Portfolio <onboarding@resend.dev>",
-        to: [process.env.NOTIFY_EMAIL || SITE.email],
+        to: [process.env.NOTIFY_EMAIL || profile.email],
         subject,
         text,
         ...(replyTo ? { reply_to: replyTo } : {}),

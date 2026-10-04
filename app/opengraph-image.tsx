@@ -1,11 +1,12 @@
 import { ImageResponse } from "next/og";
-import { SITE } from "@/lib/site";
+import { getProfile } from "@/lib/profile";
 
-export const alt = `${SITE.name} — ${SITE.role}`;
+export const alt = "Portfolio";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+export default async function OpengraphImage() {
+  const profile = await getProfile();
   return new ImageResponse(
     (
       <div
@@ -42,16 +43,16 @@ export default function OpengraphImage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ fontSize: 84, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2 }}>{SITE.name}</div>
-          <div style={{ fontSize: 42, color: "#c7d2fe", fontWeight: 500 }}>{SITE.role}</div>
+          <div style={{ fontSize: 84, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2 }}>{profile.name}</div>
+          <div style={{ fontSize: 42, color: "#c7d2fe", fontWeight: 500 }}>{profile.role}</div>
           <div style={{ fontSize: 28, color: "#94a3b8" }}>
-            React · Next.js · TypeScript · Laravel · Python · ML
+            {profile.coreStack.slice(0, 6).join(" · ")}
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 28, color: "#86efac" }}>
           <div style={{ width: 14, height: 14, borderRadius: 14, background: "#22c55e" }} />
-          {SITE.availability}
+          {profile.availability}
         </div>
       </div>
     ),

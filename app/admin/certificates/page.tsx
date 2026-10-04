@@ -15,6 +15,8 @@ import { formatDate, safeUrl } from "@/lib/utils";
 import { buildStoragePath, storagePathFromUrl, validateUpload } from "@/lib/upload";
 import { optionalHttpUrl } from "@/lib/validation";
 import toast from "react-hot-toast";
+import { ImportDefaultsCard } from "@/components/admin/ImportDefaultsCard";
+import { FALLBACK_CERTS, forImport } from "@/lib/fallback-data";
 import type { Certificate } from "@/types";
 
 const certSchema = z.object({
@@ -159,6 +161,10 @@ export default function AdminCertificatesPage() {
         <div className="flex justify-end mb-6">
           <Button onClick={openCreate} leftIcon={<Plus className="w-4 h-4" />}>Add Certificate</Button>
         </div>
+
+        {!loading && certs.length === 0 && (
+          <ImportDefaultsCard table="certificates" rows={forImport(FALLBACK_CERTS)} onDone={fetchCerts} />
+        )}
 
         {loading ? (
           <LoadingSpinner />

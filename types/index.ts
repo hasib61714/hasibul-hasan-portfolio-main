@@ -138,3 +138,13 @@ export interface SocialLink {
   url: string;
   icon: string;
 }
+
+export interface ContentBlock {
+  id: string;
+  section: "service" | "process" | "pillar";
+  title: string;
+  description: string;
+  tags: string[];
+  icon?: string | null;
+  order_index: number;
+}

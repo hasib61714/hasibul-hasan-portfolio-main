@@ -39,7 +39,7 @@ A modern, full-stack personal portfolio built with **Next.js 15**, **TypeScript*
 - **Blog** — write posts in Markdown from the admin panel (cover + inline image upload, drafts, tags, RSS feed at `/blog/rss.xml`)
 - **Achievements & Testimonials** — add awards, open-source work, talks and client quotes in the admin panel; each section appears automatically once it has content
 - **Printable resume** — `/resume` is generated from your site data and prints to a clean A4 PDF
-- **Site settings** — toggle the "open to work" badge, edit its text and add a booking link (Cal.com / Calendly) without redeploying
+- **Everything editable** — name, headline, story, email, WhatsApp, all social links, experience timeline, services, process, FAQ, skills, projects, availability badge and booking link are edited from the admin panel; no code changes or redeploys needed
 - **Visitor analytics** — privacy-friendly page-view chart, top pages and referrers on the admin dashboard (no cookies, no IPs)
 - **Email alerts** — optional instant email when someone uses the contact or hire form (Resend)
 - **Case studies** — every project gets its own page at `/projects/[slug]` (challenge, solution, highlights, tech stack, browser mockup) editable from the admin panel

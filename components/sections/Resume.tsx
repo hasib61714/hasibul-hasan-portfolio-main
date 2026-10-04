@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { FileText, Download, Eye, FileCheck } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { SITE } from "@/lib/site";
+import { useProfile } from "@/components/ProfileProvider";
 import { formatDate, safeUrl } from "@/lib/utils";
 import type { Document } from "@/types";
 
@@ -82,13 +82,14 @@ function DocCard({
 }
 
 export function Resume({ documents }: ResumeProps) {
+  const profile = useProfile();
   const cv = documents.find((d) => d.type === "cv");
   const coverLetter = documents.find((d) => d.type === "cover_letter");
 
   const highlights = [
     { label: "Education",    value: "B.Sc. in CSE",              sub: "Green University of Bangladesh" },
-    { label: "Experience",   value: `${SITE.yearsExperience} years`, sub: "Full-stack, ML & enterprise development" },
-    { label: "Availability", value: "Remote · Worldwide",        sub: `${SITE.timezone} · async-friendly` },
+    { label: "Experience",   value: `${profile.yearsExperience} years`, sub: "Full-stack, ML & enterprise development" },
+    { label: "Availability", value: "Remote · Worldwide",        sub: `${profile.timezone} · async-friendly` },
   ];
 
   return (

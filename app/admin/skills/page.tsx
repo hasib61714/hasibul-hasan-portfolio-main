@@ -12,6 +12,8 @@ import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { createClient } from "@/lib/supabase/client";
 import toast from "react-hot-toast";
+import { ImportDefaultsCard } from "@/components/admin/ImportDefaultsCard";
+import { FALLBACK_SKILLS, forImport } from "@/lib/fallback-data";
 import type { Skill } from "@/types";
 
 const skillSchema = z.object({
@@ -103,6 +105,10 @@ export default function AdminSkillsPage() {
         <div className="flex justify-end mb-6">
           <Button onClick={openCreate} leftIcon={<Plus className="w-4 h-4" />}>Add Skill</Button>
         </div>
+
+        {!loading && skills.length === 0 && (
+          <ImportDefaultsCard table="skills" rows={forImport(FALLBACK_SKILLS)} onDone={fetchSkills} />
+        )}
 
         {loading ? (
           <LoadingSpinner />

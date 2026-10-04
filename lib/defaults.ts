@@ -1,4 +1,4 @@
-import type { Faq } from "@/types";
+import type { ContentBlock, Faq } from "@/types";
 
 /**
  * Starter content for sections that are managed from the admin panel.
@@ -42,60 +42,28 @@ export const DEFAULT_FAQS: Faq[] = [
   },
 ];
 
-export const SERVICES = [
-  {
-    title: "Full-stack web applications",
-    description: "Product-grade apps with React and Next.js on the front end and Laravel, Node.js or Supabase behind them.",
-    tags: ["React", "Next.js", "Laravel", "Supabase"],
-    icon: "layers",
-  },
-  {
-    title: "APIs & backend systems",
-    description: "Clean, documented REST APIs, authentication, background jobs and database design that scale with your product.",
-    tags: ["REST", "FastAPI", "PostgreSQL", "Node.js"],
-    icon: "server",
-  },
-  {
-    title: "Machine learning features",
-    description: "From data cleaning and model training to explainable predictions served through an API your app can call.",
-    tags: ["Python", "Scikit-learn", "NLP", "XAI"],
-    icon: "brain",
-  },
-  {
-    title: "AR / VR experiences",
-    description: "Interactive Unity prototypes and XR applications for mobile and wearable devices.",
-    tags: ["Unity", "C#", "AR Foundation"],
-    icon: "glasses",
-  },
-  {
-    title: "Secure-by-default engineering",
-    description: "Practical web-security thinking built into the code: validation, access control and safe deployments.",
-    tags: ["OWASP", "Pentesting basics", "Linux"],
-    icon: "shield",
-  },
-  {
-    title: "Consulting & code review",
-    description: "An outside set of eyes on architecture, performance and maintainability before small problems get expensive.",
-    tags: ["Architecture", "Performance", "Reviews"],
-    icon: "search",
-  },
-] as const;
+const block = (section: ContentBlock["section"], i: number, title: string, description: string, tags: string[] = [], icon: string | null = null): ContentBlock => ({
+  id: `default-${section}-${i}`, section, title, description, tags, icon, order_index: i,
+});
 
-export const PROCESS_STEPS = [
-  {
-    title: "Discover",
-    description: "We clarify goals, users, constraints and what success looks like before any code is written.",
-  },
-  {
-    title: "Design",
-    description: "I propose a simple architecture and interface, and we agree on scope and milestones together.",
-  },
-  {
-    title: "Build",
-    description: "Iterative development in small, tested increments with regular written updates and demos.",
-  },
-  {
-    title: "Ship & support",
-    description: "Deployment, documentation and hand-over — plus follow-up so the product keeps working.",
-  },
-] as const;
+export const DEFAULT_SERVICES: ContentBlock[] = [
+  block("service", 1, "Full-stack web applications", "Product-grade apps with React and Next.js on the front end and Laravel, Node.js or Supabase behind them.", ["React", "Next.js", "Laravel", "Supabase"], "layers"),
+  block("service", 2, "APIs & backend systems", "Clean, documented REST APIs, authentication, background jobs and database design that scale with your product.", ["REST", "FastAPI", "PostgreSQL", "Node.js"], "server"),
+  block("service", 3, "Machine learning features", "From data cleaning and model training to explainable predictions served through an API your app can call.", ["Python", "Scikit-learn", "NLP", "XAI"], "brain"),
+  block("service", 4, "AR / VR experiences", "Interactive Unity prototypes and XR applications for mobile and wearable devices.", ["Unity", "C#", "AR Foundation"], "glasses"),
+  block("service", 5, "Secure-by-default engineering", "Practical web-security thinking built into the code: validation, access control and safe deployments.", ["OWASP", "Pentesting basics", "Linux"], "shield"),
+  block("service", 6, "Consulting & code review", "An outside set of eyes on architecture, performance and maintainability before small problems get expensive.", ["Architecture", "Performance", "Reviews"], "search"),
+];
+
+export const DEFAULT_PROCESS: ContentBlock[] = [
+  block("process", 1, "Discover", "We clarify goals, users, constraints and what success looks like before any code is written."),
+  block("process", 2, "Design", "I propose a simple architecture and interface, and we agree on scope and milestones together."),
+  block("process", 3, "Build", "Iterative development in small, tested increments with regular written updates and demos."),
+  block("process", 4, "Ship & support", "Deployment, documentation and hand-over — plus follow-up so the product keeps working."),
+];
+
+export const DEFAULT_PILLARS: ContentBlock[] = [
+  block("pillar", 1, "What I do", "Full-stack web apps, ML systems, AR/VR experiences and enterprise platforms — React, Next.js, Laravel, FastAPI and Python.", [], "layers"),
+  block("pillar", 2, "How I work", "Clear communication, typed and tested code, small reviewable changes. Comfortable working asynchronously with distributed teams.", [], "building"),
+  block("pillar", 3, "Always learning", "Actively exploring applied ML, AR/VR and security so the systems I build stay modern, fast and safe by default.", [], "lightbulb"),
+];

@@ -13,7 +13,7 @@ const PALETTE_LINKS = [
 
 /** Shared chrome (navbar, footer, command palette, analytics) for sub-pages. */
 export async function PageShell({ children }: { children: React.ReactNode }) {
-  const { projects, documents, settings } = await getPortfolioData();
+  const { projects, documents } = await getPortfolioData();
   const cv = documents.find((d) => d.type === "cv");
   return (
     <>
@@ -29,7 +29,6 @@ export async function PageShell({ children }: { children: React.ReactNode }) {
       <CommandPalette
         projects={projects.map((p) => ({ title: p.title, slug: projectSlug(p) }))}
         cvUrl={cv?.file_url}
-        bookingUrl={settings.bookingUrl}
         extraLinks={PALETTE_LINKS}
       />
     </>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Download, Pencil, Plus, Trash2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/client";
 export interface CrudField {
   name: string;
   label: string;
-  type: "text" | "textarea" | "number" | "date" | "url" | "select";
+  type: "text" | "textarea" | "number" | "date" | "url" | "select" | "lines" | "tags" | "boolean";
   required?: boolean;
   placeholder?: string;
   help?: string;
@@ -35,6 +35,10 @@ interface CrudPageProps<T extends { id: string }> {
   orderBy: { column: string; ascending?: boolean }[];
   /** Name of an integer column that should default to "last position" on create. */
   orderField?: string;
+  /** Only show / create rows where `column` equals `value` (for tables shared by several pages). */
+  filter?: { column: string; value: string };
+  /** Built-in content that can be imported into the table in one click, so it can then be edited here. */
+  seedRows?: Record<string, unknown>[];
   renderItem: (item: T) => { title: string; meta?: string; body?: string };
 }
 
@@ -43,7 +47,7 @@ type FormValues = Record<string, string>;
 const HTTP_URL = /^https?:\/\/\S+$/i;
 
 export function CrudPage<T extends { id: string }>({
-  table, title, subtitle, singular, icon: Icon, fields, orderBy, orderField, renderItem,
+  table, title, subtitle, singular, icon: Icon, fields, orderBy, orderField, filter, seedRows, renderItem,
 }: CrudPageProps<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,19 +56,23 @@ export function CrudPage<T extends { id: string }>({
   const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   // `orderBy` is usually an inline literal; key it by value so it can't retrigger loading every render.
   const orderKey = JSON.stringify(orderBy);
+  const filterColumn = filter?.column;
+  const filterValue = filter?.value;
 
   const load = useCallback(async () => {
     const supabase = createClient();
     let query = supabase.from(table).select("*");
+    if (filterColumn && filterValue) query = query.eq(filterColumn, filterValue);
     (JSON.parse(orderKey) as CrudPageProps<T>["orderBy"]).forEach((o) => { query = query.order(o.column, { ascending: o.ascending ?? true }); });
     const { data, error } = await query;
     if (error) toast.error(`Failed to load ${title.toLowerCase()}: ${error.message}`);
     setItems((data as T[]) ?? []);
     setLoading(false);
-  }, [table, title, orderKey]);
+  }, [table, title, orderKey, filterColumn, filterValue]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -82,7 +90,14 @@ export function CrudPage<T extends { id: string }>({
     setErrors({});
     const initial: FormValues = {};
     const record = item as unknown as Record<string, unknown>;
-    fields.forEach((f) => { initial[f.name] = record[f.name] == null ? "" : String(record[f.name]); });
+    fields.forEach((f) => {
+      const v = record[f.name];
+      initial[f.name] =
+        v == null ? ""
+        : f.type === "lines" && Array.isArray(v) ? v.join("\n")
+        : f.type === "tags" && Array.isArray(v) ? v.join(", ")
+        : String(v);
+    });
     setValues(initial);
     setOpen(true);
   };
@@ -106,8 +121,14 @@ export function CrudPage<T extends { id: string }>({
     const payload: Record<string, unknown> = {};
     fields.forEach((f) => {
       const v = (values[f.name] ?? "").trim();
-      payload[f.name] = f.type === "number" ? (v === "" ? 0 : Number(v)) : v === "" ? null : v;
+      payload[f.name] =
+        f.type === "number" ? (v === "" ? 0 : Number(v))
+        : f.type === "boolean" ? v === "true"
+        : f.type === "lines" ? (values[f.name] ?? "").split("\n").map((l) => l.trim()).filter(Boolean)
+        : f.type === "tags" ? v.split(",").map((t) => t.trim()).filter(Boolean)
+        : v === "" ? null : v;
     });
+    if (filter && !editing) payload[filter.column] = filter.value;
     if (orderField && !editing && payload[orderField] == null) payload[orderField] = items.length;
 
     const supabase = createClient();
@@ -118,6 +139,17 @@ export function CrudPage<T extends { id: string }>({
     if (error) { toast.error(`Failed to save: ${error.message}`); return; }
     toast.success(editing ? `${singular} updated` : `${singular} added`);
     setOpen(false);
+    load();
+  };
+
+  const importSeed = async () => {
+    if (!seedRows?.length) return;
+    setImporting(true);
+    const rows = seedRows.map((r) => (filter ? { ...r, [filter.column]: filter.value } : r));
+    const { error } = await createClient().from(table).insert(rows);
+    setImporting(false);
+    if (error) { toast.error(`Import failed: ${error.message}`); return; }
+    toast.success(`Imported ${rows.length} item${rows.length > 1 ? "s" : ""} — you can now edit them`);
     load();
   };
 
@@ -140,7 +172,19 @@ export function CrudPage<T extends { id: string }>({
         {loading ? (
           <LoadingSpinner />
         ) : items.length === 0 ? (
-          <EmptyState icon={Icon} title={`No ${title.toLowerCase()} yet`} description={`Click “Add ${singular}” to create the first one.`} />
+          <div>
+            <EmptyState icon={Icon} title={`No ${title.toLowerCase()} yet`} description={`Click “Add ${singular}” to create the first one.`} />
+            {seedRows && seedRows.length > 0 && (
+              <div className="mx-auto mt-2 max-w-md rounded-2xl border border-dashed border-gray-300 p-5 text-center dark:border-white/15">
+                <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                  Your website currently shows built-in content here. Import it to edit, reorder or delete each item.
+                </p>
+                <Button type="button" variant="outline" isLoading={importing} onClick={importSeed} leftIcon={<Download className="h-4 w-4" />}>
+                  Import current website content ({seedRows.length})
+                </Button>
+              </div>
+            )}
+          </div>
         ) : (
           <ul className="grid gap-4 lg:grid-cols-2">
             {items.map((item) => {
@@ -179,11 +223,14 @@ export function CrudPage<T extends { id: string }>({
             const set = (v: string) => setValues((prev) => ({ ...prev, [f.name]: v }));
             return (
               <div key={f.name}>
-                {f.type === "textarea" ? (
+                {f.type === "textarea" || f.type === "lines" ? (
                   <Textarea {...common} rows={f.rows ?? 4} onChange={(e) => set(e.target.value)} />
-                ) : f.type === "select" ? (
+                ) : f.type === "select" || f.type === "boolean" ? (
                   <Select label={common.label} error={common.error} value={common.value} onChange={(e) => set(e.target.value)}>
-                    {f.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    {(f.type === "boolean"
+                      ? [{ value: "false", label: "No" }, { value: "true", label: "Yes" }]
+                      : f.options
+                    )?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </Select>
                 ) : (
                   <Input

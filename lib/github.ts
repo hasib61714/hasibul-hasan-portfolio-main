@@ -1,4 +1,3 @@
-import { SITE } from "@/lib/site";
 
 export interface GithubStats {
   repos: number;
@@ -10,13 +9,13 @@ export interface GithubStats {
  * Public GitHub numbers for the About section. Cached for an hour and
  * silently skipped (returns null) if GitHub is unreachable or rate-limited.
  */
-export async function getGithubStats(): Promise<GithubStats | null> {
+export async function getGithubStats(username: string): Promise<GithubStats | null> {
   try {
     const headers = { Accept: "application/vnd.github+json" };
     const next = { revalidate: 3600 };
     const [userRes, reposRes] = await Promise.all([
-      fetch(`https://api.github.com/users/${SITE.githubUser}`, { headers, next }),
-      fetch(`https://api.github.com/users/${SITE.githubUser}/repos?per_page=100&type=owner`, { headers, next }),
+      fetch(`https://api.github.com/users/${username}`, { headers, next }),
+      fetch(`https://api.github.com/users/${username}/repos?per_page=100&type=owner`, { headers, next }),
     ]);
     if (!userRes.ok || !reposRes.ok) return null;
     const user = (await userRes.json()) as { public_repos: number; followers: number };

@@ -11,7 +11,8 @@ import { GitHubIcon } from "@/components/ui/SocialIcons";
 import { CommandPalette } from "@/components/CommandPalette";
 import { SpotlightProvider } from "@/components/ui/SpotlightProvider";
 import { getPortfolioData } from "@/lib/data";
-import { SITE, getSiteUrl } from "@/lib/site";
+import { getSiteUrl } from "@/lib/site";
+import { getProfile } from "@/lib/profile";
 import { projectSlug, safeUrl } from "@/lib/utils";
 
 export const revalidate = 60;
@@ -40,13 +41,13 @@ async function loadProject(slug: string) {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const { project } = await loadProject(slug);
+  const [{ project }, profile] = await Promise.all([loadProject(slug), getProfile()]);
   if (!project) return { title: "Project not found" };
   return {
     title: `${project.title} — case study`,
     description: project.description,
     alternates: { canonical: `/projects/${slug}` },
-    openGraph: { title: `${project.title} | ${SITE.name}`, description: project.description, url: `/projects/${slug}`, type: "article" },
+    openGraph: { title: `${project.title} | ${profile.name}`, description: project.description, url: `/projects/${slug}`, type: "article" },
   };
 }
 
@@ -76,7 +77,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
     name: project.title,
     description: project.description,
     url: `${getSiteUrl()}/projects/${slug}`,
-    author: { "@type": "Person", name: SITE.name },
+    author: { "@type": "Person", name: data.profile.name },
     keywords: project.tech_stack.join(", "),
   };
 

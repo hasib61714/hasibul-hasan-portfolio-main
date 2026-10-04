@@ -5,25 +5,46 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, MessageCircle, MapPin, Send, User, Copy, Check, CalendarCheck } from "lucide-react";
-import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Honeypot } from "@/components/ui/Honeypot";
 import { contactSchema, type ContactInput } from "@/lib/validation";
-import { SITE, whatsappUrl } from "@/lib/site";
-import { mailtoHref } from "@/lib/utils";
+import { useProfile } from "@/components/ProfileProvider";
+import { profileHost, socialLinks, whatsappLink, type SocialKey } from "@/lib/profile-defaults";
+import { SocialIcon } from "@/components/ui/SocialIcon";
+import { mailtoHref, safeUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-const CONTACT_INFO = [
-  { icon: Mail,          label: "Email",    value: SITE.email,                         href: mailtoHref(SITE.email), color: "from-brand-500 to-brand-600" },
-  { icon: MessageCircle, label: "WhatsApp", value: `+${SITE.whatsapp}`,                href: whatsappUrl(),          color: "from-emerald-500 to-emerald-600" },
-  { icon: LinkedInIcon,  label: "LinkedIn", value: "linkedin.com/in/hasibulhasan",     href: SITE.linkedin,          color: "from-sky-500 to-blue-600" },
-  { icon: GitHubIcon,    label: "GitHub",   value: "github.com/hasib61714",            href: SITE.github,            color: "from-gray-600 to-gray-800" },
-  { icon: MapPin,        label: "Location", value: `${SITE.location} (${SITE.timezone})`, href: undefined,           color: "from-accent-500 to-accent-600" },
-];
+const SOCIAL_COLORS: Record<string, string> = {
+  github: "from-gray-600 to-gray-800",
+  linkedin: "from-sky-500 to-blue-600",
+  facebook: "from-blue-600 to-indigo-700",
+  twitter: "from-gray-700 to-black",
+  youtube: "from-red-500 to-red-700",
+  instagram: "from-pink-500 to-orange-500",
+};
 
-export function Contact({ bookingUrl }: { bookingUrl?: string }) {
+export function Contact() {
+  const profile = useProfile();
+  const bookingUrl = safeUrl(profile.bookingUrl);
+  const whatsapp = whatsappLink(profile);
+
+  const CONTACT_INFO: { icon?: typeof Mail; social?: SocialKey; label: string; value: string; href?: string; color: string }[] = [
+    { icon: Mail, label: "Email", value: profile.email, href: mailtoHref(profile.email), color: "from-brand-500 to-brand-600" },
+    ...(whatsapp
+      ? [{ icon: MessageCircle, label: "WhatsApp", value: `+${profile.whatsapp.replace(/\D/g, "")}`, href: whatsapp, color: "from-emerald-500 to-emerald-600" }]
+      : []),
+    ...socialLinks(profile, ["linkedin", "github", "twitter", "youtube", "instagram", "facebook"]).map((l) => ({
+      social: l.key,
+      label: l.label,
+      value: profileHost(l.href),
+      href: l.href,
+      color: SOCIAL_COLORS[l.key] ?? "from-brand-500 to-accent-500",
+    })),
+    { icon: MapPin, label: "Location", value: `${profile.location} (${profile.timezone})`, color: "from-accent-500 to-accent-600" },
+  ];
+
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -55,7 +76,7 @@ export function Contact({ bookingUrl }: { bookingUrl?: string }) {
 
   const copyEmail = async () => {
     try {
-      await navigator.clipboard.writeText(SITE.email);
+      await navigator.clipboard.writeText(profile.email);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -89,11 +110,11 @@ export function Contact({ bookingUrl }: { bookingUrl?: string }) {
             </div>
 
             <ul className="flex flex-1 flex-col gap-3">
-              {CONTACT_INFO.map(({ icon: Icon, label, value, href, color }) => {
+              {CONTACT_INFO.map(({ icon: Icon, social, label, value, href, color }) => {
                 const inner = (
                   <>
                     <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${color} text-white shadow-md transition-transform duration-300 group-hover:scale-105`}>
-                      <Icon className="h-5 w-5" />
+                      {social ? <SocialIcon name={social} className="h-5 w-5" /> : Icon ? <Icon className="h-5 w-5" /> : null}
                     </span>
                     <span className="min-w-0">
                       <span className="mb-0.5 block font-mono text-[11px] uppercase tracking-widest text-gray-500">{label}</span>

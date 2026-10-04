@@ -198,6 +198,61 @@ CREATE TABLE IF NOT EXISTS site_settings (
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 INSERT INTO site_settings (id) VALUES (1) ON CONFLICT DO NOTHING;
+-- Editable profile / site content (every column is optional: NULL = use the built-in default)
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS name             TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS brand            TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS role             TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS headline_before  TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS headline_accent  TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS headline_after   TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS hero_description TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS about_story      TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS seo_description  TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_tagline   TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS email            TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS whatsapp         TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS github_url       TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS linkedin_url     TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS facebook_url     TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS twitter_url      TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS youtube_url      TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS instagram_url    TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS location         TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS timezone         TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS years_experience TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS tech_marquee     TEXT[];
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS core_stack       TEXT[];
+
+-- Work & education timeline
+CREATE TABLE IF NOT EXISTS experiences (
+  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  kind         TEXT NOT NULL DEFAULT 'work' CHECK (kind IN ('work', 'education')),
+  title        TEXT NOT NULL,
+  organization TEXT NOT NULL,
+  location     TEXT,
+  period       TEXT NOT NULL,
+  is_current   BOOLEAN NOT NULL DEFAULT false,
+  description  TEXT[] NOT NULL DEFAULT '{}',
+  tech         TEXT[] NOT NULL DEFAULT '{}',
+  color        TEXT NOT NULL DEFAULT 'from-brand-500 to-cyan-500',
+  link         TEXT,
+  order_index  INTEGER NOT NULL DEFAULT 0,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Reusable text blocks: services, process steps and "about" highlights
+CREATE TABLE IF NOT EXISTS content_blocks (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  section     TEXT NOT NULL CHECK (section IN ('service', 'process', 'pillar')),
+  title       TEXT NOT NULL,
+  description TEXT NOT NULL,
+  tags        TEXT[] NOT NULL DEFAULT '{}',
+  icon        TEXT,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS content_blocks_section_idx ON content_blocks (section, order_index);
+
 
 -- Privacy-friendly page-view log (path + referrer host only; no IPs, no cookies)
 CREATE TABLE IF NOT EXISTS page_views (
@@ -313,6 +368,8 @@ ALTER TABLE achievements  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE posts         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE page_views    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE experiences    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE content_blocks ENABLE ROW LEVEL SECURITY;
 
 -- Remove every policy from earlier versions of this schema
 DROP POLICY IF EXISTS "Public can read projects"     ON projects;
@@ -338,6 +395,10 @@ DROP POLICY IF EXISTS "Admin full access achievements" ON achievements;
 DROP POLICY IF EXISTS "Admin full access posts"        ON posts;
 DROP POLICY IF EXISTS "Admin full access settings"     ON site_settings;
 DROP POLICY IF EXISTS "Admin full access page views"   ON page_views;
+DROP POLICY IF EXISTS "Public can read experiences"    ON experiences;
+DROP POLICY IF EXISTS "Public can read content blocks" ON content_blocks;
+DROP POLICY IF EXISTS "Admin full access experiences"  ON experiences;
+DROP POLICY IF EXISTS "Admin full access content blocks" ON content_blocks;
 
 -- Public read access to portfolio content
 CREATE POLICY "Public can read projects"     ON projects     FOR SELECT USING (true);
@@ -349,6 +410,8 @@ CREATE POLICY "Public can read faqs"           ON faqs          FOR SELECT USING
 CREATE POLICY "Public can read achievements"   ON achievements  FOR SELECT USING (true);
 CREATE POLICY "Public can read published posts" ON posts        FOR SELECT USING (published = true);
 CREATE POLICY "Public can read settings"       ON site_settings FOR SELECT USING (true);
+CREATE POLICY "Public can read experiences"    ON experiences    FOR SELECT USING (true);
+CREATE POLICY "Public can read content blocks" ON content_blocks FOR SELECT USING (true);
 
 -- Contact / hire submissions go through the server API routes (service role, with
 -- validation + rate limiting). There is intentionally NO public INSERT policy, so
@@ -368,6 +431,8 @@ CREATE POLICY "Admin full access posts"        ON posts         FOR ALL USING (p
 CREATE POLICY "Admin full access settings"     ON site_settings FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 -- page_views: rows are written by the server (service role); only admins can read them.
 CREATE POLICY "Admin full access page views"   ON page_views    FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access experiences"  ON experiences    FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access content blocks" ON content_blocks FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- ─────────────────────────────────────────────
 -- Storage buckets (public read, admin-only write, size + MIME limits)

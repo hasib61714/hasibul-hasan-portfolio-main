@@ -206,3 +206,14 @@ export const FALLBACK_CERTS: Certificate[] = [
     created_at: "",
   },
 ];
+
+/** Fallback rows without client-side ids/timestamps, ready to insert into the database. */
+export function forImport<T extends { id: string; created_at: string; updated_at?: string }>(rows: T[]): Record<string, unknown>[] {
+  return rows.map((row) => {
+    const copy: Record<string, unknown> = { ...row };
+    delete copy.id;
+    delete copy.created_at;
+    delete copy.updated_at;
+    return copy;
+  });
+}

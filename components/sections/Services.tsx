@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Brain, Glasses, Layers, Search, Server, Shield } from "lucide-react";
+import { Brain, Cloud, Code2, Database, Glasses, Layers, Palette, Rocket, Search, Server, Shield, Smartphone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { SERVICES } from "@/lib/defaults";
+import type { ContentBlock } from "@/types";
 
 const ICONS: Record<string, LucideIcon> = {
   layers: Layers,
@@ -13,6 +13,12 @@ const ICONS: Record<string, LucideIcon> = {
   glasses: Glasses,
   shield: Shield,
   search: Search,
+  code: Code2,
+  rocket: Rocket,
+  database: Database,
+  smartphone: Smartphone,
+  cloud: Cloud,
+  palette: Palette,
 };
 
 const GRADIENTS = [
@@ -24,7 +30,7 @@ const GRADIENTS = [
   "from-cyan-500 to-brand-500",
 ];
 
-export function Services() {
+export function Services({ items }: { items: ContentBlock[] }) {
   return (
     <section id="services" className="section-padding bg-white dark:bg-gray-950">
       <div className="container-max">
@@ -36,8 +42,8 @@ export function Services() {
         />
 
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map((service, i) => {
-            const Icon = ICONS[service.icon] ?? Layers;
+          {items.map((service, i) => {
+            const Icon = ICONS[service.icon ?? ""] ?? Layers;
             return (
               <motion.li
                 key={service.title}
@@ -52,13 +58,15 @@ export function Services() {
                 </span>
                 <h3 className="relative z-10 mb-2 text-lg font-bold text-gray-900 dark:text-white">{service.title}</h3>
                 <p className="relative z-10 mb-5 flex-1 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{service.description}</p>
+                {service.tags && service.tags.length > 0 && (
                 <ul className="relative z-10 flex flex-wrap gap-1.5">
-                  {service.tags.map((tag) => (
+                  {(service.tags ?? []).map((tag) => (
                     <li key={tag} className="rounded-md border border-gray-200/80 bg-gray-100 px-2 py-1 font-mono text-[11px] text-gray-600 dark:border-white/10 dark:bg-white/[0.05] dark:text-gray-400">
                       {tag}
                     </li>
                   ))}
                 </ul>
+                )}
               </motion.li>
             );
           })}

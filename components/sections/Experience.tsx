@@ -6,14 +6,14 @@ import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { Briefcase, GraduationCap, MapPin, Calendar, ExternalLink } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { EXPERIENCES, type TabType } from "@/lib/experience";
+import type { ExperienceItem, TabType } from "@/lib/experience";
 
-export function Experience() {
+export function Experience({ items }: { items: ExperienceItem[] }) {
   const [activeTab, setActiveTab] = useState<TabType>("work");
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
-  const filtered = EXPERIENCES.filter((e) => e.type === activeTab);
+  const filtered = items.filter((e) => e.type === activeTab);
 
   return (
     <section id="experience" className="section-padding bg-white dark:bg-gray-950 relative overflow-hidden">

@@ -77,16 +77,19 @@ Run `supabase/schema.sql` again whenever you pull an update — it is idempotent
 
 | Admin page | What you manage | Public result |
 |---|---|---|
-| **Projects** | Details, case study (challenge / solution / highlights / role / year), cover screenshot, **gallery**, demo video link | Project cards and `/projects/<slug>` |
+| **Site & Profile** | Name, job title, hero headline & intro, "My story", years of experience, **email, WhatsApp and all social links** (GitHub, LinkedIn, Facebook, X, YouTube, Instagram), location, time zone, open-to-work badge, booking link, tech strip & core stack, SEO description, footer text | Navbar, hero, About, Contact, footer, page titles, structured data |
+| **Experience** | Work & education timeline | "Experience" section, About cards, printable resume |
+| **Projects** | Details, case study (challenge / solution / highlights / role / year), screenshot, **gallery**, demo video | Project cards and `/projects/<slug>` |
+| **Skills / Certificates / Documents** | Skills with levels, certificates (image + PDF), CV & cover letter | Skills, Certificates and Resume sections |
+| **Services / Process / About cards** | The service cards, work-process steps and the three highlight cards | "Services", "Process" and About sections |
+| **Achievements / Testimonials / FAQ** | Awards & open-source work, client quotes, questions & answers | Matching sections (Achievements and Testimonials stay hidden while empty) |
 | **Blog** | Markdown posts, cover & inline images, tags, draft/publish | `/blog`, `/blog/<slug>`, RSS, "Writing" section |
-| **Achievements** | Awards, open-source, talks, publications | "Achievements" section (hidden while empty) |
-| **Testimonials** | Client / colleague quotes | "Testimonials" section (hidden while empty) |
-| **FAQ** | Questions & answers | "FAQ" section (a default set is shown until you add your own) |
-| **Certificates / Documents / Skills** | As before | Certificates, CV, Skills |
-| **Settings** | "Open to work" badge + text, booking link | Hero badge, "Book a call" buttons |
-| **Dashboard** | Visitor chart, messages, hire requests, profile photo | — |
+| **Messages / Hire requests** | Form submissions | — |
+| **Dashboard** | Visitor chart, profile photo | — |
 
-Services and the 4-step process are plain content in `lib/defaults.ts`; work/education history is in `lib/experience.ts`.
+**Tip — editing the built-in content:** until you save your own version, sections show built-in default content. On the Experience, Skills, Projects, Certificates, Services, Process, About cards and FAQ pages, an **"Import current website content"** button copies those defaults into the database in one click so you can edit, reorder or delete each item.
+
+The built-in defaults live in `lib/profile-defaults.ts`, `lib/defaults.ts`, `lib/experience.ts` and `lib/fallback-data.ts`; once you save values in the admin panel they take priority.
 
 ### Optional environment variables
 

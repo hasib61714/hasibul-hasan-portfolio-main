@@ -4,15 +4,18 @@ import { ArrowLeft, PenLine } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
 import { BlogList } from "@/components/BlogList";
 import { getPublishedPosts } from "@/lib/posts";
-import { SITE } from "@/lib/site";
+import { getProfile } from "@/lib/profile";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Blog",
-  description: `Notes on web development, machine learning and engineering by ${SITE.name}.`,
-  alternates: { canonical: "/blog", types: { "application/rss+xml": "/blog/rss.xml" } },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const profile = await getProfile();
+  return {
+    title: "Blog",
+    description: `Notes on web development, machine learning and engineering by ${profile.name}.`,
+    alternates: { canonical: "/blog", types: { "application/rss+xml": "/blog/rss.xml" } },
+  };
+}
 
 export default async function BlogPage() {
   const posts = await getPublishedPosts();

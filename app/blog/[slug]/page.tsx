@@ -6,7 +6,8 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
 import { Markdown } from "@/components/Markdown";
 import { getPostBySlug, getPublishedPosts, readingMinutes } from "@/lib/posts";
-import { SITE, getSiteUrl } from "@/lib/site";
+import { getSiteUrl } from "@/lib/site";
+import { getProfile } from "@/lib/profile";
 import { formatDate, safeUrl } from "@/lib/utils";
 
 export const revalidate = 60;
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function PostPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const [post, all] = await Promise.all([getPostBySlug(slug), getPublishedPosts()]);
+  const [post, all, profile] = await Promise.all([getPostBySlug(slug), getPublishedPosts(), getProfile()]);
   if (!post) notFound();
 
   const cover = safeUrl(post.cover_url);
@@ -58,7 +59,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     image: cover ? [cover] : undefined,
     keywords: post.tags.join(", "),
     mainEntityOfPage: `${getSiteUrl()}/blog/${post.slug}`,
-    author: { "@type": "Person", name: SITE.name, url: getSiteUrl() },
+    author: { "@type": "Person", name: profile.name, url: getSiteUrl() },
   };
 
   return (
@@ -94,7 +95,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
         <footer className="mt-16 border-t border-gray-200 pt-8 dark:border-white/10">
           <p className="text-gray-600 dark:text-gray-400">
-            Written by <strong className="text-gray-900 dark:text-white">{SITE.name}</strong>. Questions or feedback?{" "}
+            Written by <strong className="text-gray-900 dark:text-white">{profile.name}</strong>. Questions or feedback?{" "}
             <Link href="/#contact" className="font-medium text-brand-600 underline underline-offset-4 dark:text-brand-300">Get in touch</Link>.
           </p>
           {next && next.id !== post.id && (

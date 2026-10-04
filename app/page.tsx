@@ -20,6 +20,7 @@ import { SpotlightProvider } from "@/components/ui/SpotlightProvider";
 import { ViewTracker } from "@/components/ViewTracker";
 import { getPortfolioData } from "@/lib/data";
 import { getGithubStats } from "@/lib/github";
+import { githubUsername } from "@/lib/profile-defaults";
 import { projectSlug } from "@/lib/utils";
 
 // Content is read on the server and cached; admin edits appear within a minute.
@@ -31,8 +32,9 @@ const PALETTE_LINKS = [
 ];
 
 export default async function HomePage() {
-  const [data, github] = await Promise.all([getPortfolioData(), getGithubStats()]);
-  const { projects, skills, certificates, documents, avatarUrl, testimonials, faqs, achievements, latestPosts, settings } = data;
+  const data = await getPortfolioData();
+  const github = await getGithubStats(githubUsername(data.profile));
+  const { projects, skills, certificates, documents, avatarUrl, testimonials, faqs, achievements, latestPosts, experiences, services, processSteps, pillars } = data;
   const cv = documents.find((d) => d.type === "cv");
 
   return (
@@ -42,18 +44,15 @@ export default async function HomePage() {
         <Hero
           avatarUrl={avatarUrl}
           cvUrl={cv?.file_url}
-          bookingUrl={settings.bookingUrl}
-          openToWork={settings.open_to_work}
-          availabilityText={settings.availability_text}
           projectCount={projects.length}
           certificateCount={certificates.length}
         />
-        <About certificateCount={certificates.length} projectCount={projects.length} github={github} />
-        <Services />
-        <Experience />
+        <About certificateCount={certificates.length} projectCount={projects.length} github={github} pillars={pillars} experiences={experiences} />
+        <Services items={services} />
+        <Experience items={experiences} />
         <Skills skills={skills} />
         <Projects projects={projects} />
-        <Process />
+        <Process items={processSteps} />
         <Achievements items={achievements} />
         <Certificates certificates={certificates} />
         <Testimonials items={testimonials} />
@@ -61,7 +60,7 @@ export default async function HomePage() {
         <Resume documents={documents} />
         <Faq items={faqs} />
         <HireMe />
-        <Contact bookingUrl={settings.bookingUrl} />
+        <Contact />
       </main>
       <Footer />
       <SpotlightProvider />
@@ -69,7 +68,6 @@ export default async function HomePage() {
       <CommandPalette
         projects={projects.map((p) => ({ title: p.title, slug: projectSlug(p) }))}
         cvUrl={cv?.file_url}
-        bookingUrl={settings.bookingUrl}
         extraLinks={PALETTE_LINKS}
       />
     </>
