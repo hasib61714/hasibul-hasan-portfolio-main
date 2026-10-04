@@ -175,7 +175,7 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
               <div aria-hidden className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-brand-500/30 via-accent-500/20 to-cyan-400/20 blur-3xl" />
 
               <div className="relative aspect-[4/5] rounded-3xl bg-gradient-to-br from-brand-400 via-accent-400 to-cyan-400 p-[1.5px] shadow-2xl shadow-brand-600/25">
-                <div className="relative h-full w-full overflow-hidden rounded-[calc(1.5rem-1.5px)] bg-gray-100 dark:bg-gray-900">
+                <div className="relative h-full w-full overflow-hidden rounded-[calc(1.5rem-1.5px)] bg-white dark:bg-gray-900">
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
@@ -183,7 +183,7 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                       fill
                       priority
                       sizes="(min-width: 1024px) 384px, 90vw"
-                      className="object-cover"
+                      className="object-cover object-top"
                     />
                   ) : (
                     <div className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-500/10 via-transparent to-cyan-400/10">
@@ -191,22 +191,24 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                     </div>
                   )}
 
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-950/85 via-gray-950/40 to-transparent p-4 pt-16">
-                    <p className="text-sm font-semibold text-white">{SITE.name}</p>
-                    <p className="text-xs text-gray-300">{SITE.role}</p>
-                    <dl className="mt-3 grid grid-cols-3 gap-2">
-                      {stats.map((s) => (
-                        <div key={s.label} className="rounded-xl border border-white/10 bg-white/10 px-2 py-2 text-center backdrop-blur-md">
-                          <dd className="text-lg font-bold leading-none text-white"><CountUp value={s.value} /></dd>
-                          <dt className="mt-1 text-[11px] text-gray-300">{s.label}</dt>
-                        </div>
-                      ))}
-                    </dl>
+                  <div className="glass-strong absolute inset-x-3 bottom-3 rounded-xl px-3.5 py-2.5">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{SITE.name}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">{SITE.role}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Code card */}
+              <dl className="mt-3 grid grid-cols-3 gap-2">
+                {stats.map((st) => (
+                  <div key={st.label} className="card-premium rounded-xl px-2 py-3 text-center">
+                    <dd className="relative z-10 text-xl font-bold leading-none text-gray-900 dark:text-white"><CountUp value={st.value} /></dd>
+                    <dt className="relative z-10 mt-1.5 text-[11px] text-gray-500 dark:text-gray-400">{st.label}</dt>
+                  </div>
+                ))}
+              </dl>
+
+              {/* Code card (only while there is no photo — the portrait is the focal point) */}
+              {!avatarUrl && (
               <motion.div
                 aria-hidden
                 initial={{ opacity: 0, y: 12 }}
@@ -227,6 +229,7 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                 <p className="pl-3">openTo: <span className="text-emerald-600 dark:text-emerald-300">&quot;remote&quot;</span>,</p>
                 <p>{"}"}</p>
               </motion.div>
+              )}
             </motion.div>
           </motion.div>
         </div>

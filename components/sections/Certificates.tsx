@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Download, ExternalLink, Award, BadgeCheck } from "lucide-react";
+import { Download, ExternalLink, Award, BadgeCheck, Eye, FileText } from "lucide-react";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -26,6 +26,7 @@ interface CertificatesProps {
 export function Certificates({ certificates }: CertificatesProps) {
   const [selected, setSelected] = useState<Certificate | null>(null);
   const selectedImage = safeUrl(selected?.image_url);
+  const selectedFile = safeUrl(selected?.file_url);
 
   return (
     <section id="certificates" className="section-padding bg-white dark:bg-gray-950">
@@ -69,6 +70,11 @@ export function Certificates({ certificates }: CertificatesProps) {
                     ) : (
                       <Award aria-hidden className="h-12 w-12 text-white/90 transition-transform duration-300 group-hover:scale-110" />
                     )}
+                    {file && (
+                      <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-md bg-black/40 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+                        <FileText className="h-3 w-3" /> PDF
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 p-5 pb-3">
                     <h3 className="mb-1 line-clamp-2 font-bold text-gray-900 transition-colors group-hover:text-brand-600 dark:text-white dark:group-hover:text-brand-300">
@@ -81,30 +87,26 @@ export function Certificates({ certificates }: CertificatesProps) {
                   </div>
                 </button>
 
-                {(credential || file) && (
-                  <div className="flex gap-2 px-5 pb-5">
-                    {credential && (
-                      <a
-                        href={credential}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-brand-400/60 hover:text-brand-600 dark:border-white/10 dark:text-gray-300 dark:hover:text-brand-300"
-                      >
-                        <BadgeCheck className="h-3.5 w-3.5" /> Verify
-                      </a>
-                    )}
-                    {file && (
-                      <a
-                        href={file}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 transition-colors hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-300"
-                      >
-                        <Download className="h-3.5 w-3.5" /> PDF
-                      </a>
-                    )}
-                  </div>
-                )}
+                <div className="flex gap-2 px-5 pb-5">
+                  <button
+                    type="button"
+                    onClick={() => setSelected(cert)}
+                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-500"
+                  >
+                    <Eye className="h-3.5 w-3.5" /> View certificate
+                  </button>
+                  {credential && (
+                    <a
+                      href={credential}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Verify ${cert.title} online`}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-brand-400/60 hover:text-brand-600 dark:border-white/10 dark:text-gray-300 dark:hover:text-brand-300"
+                    >
+                      <BadgeCheck className="h-3.5 w-3.5" /> Verify
+                    </a>
+                  )}
+                </div>
               </motion.li>
             );
           })}
@@ -118,6 +120,12 @@ export function Certificates({ certificates }: CertificatesProps) {
               <div className="relative h-64 w-full overflow-hidden rounded-xl">
                 <Image src={selectedImage} alt={selected.title} fill sizes="640px" className="object-contain" />
               </div>
+            ) : selectedFile ? (
+              <iframe
+                src={`${selectedFile}#toolbar=0&navpanes=0&view=FitH`}
+                title={`${selected.title} (PDF)`}
+                className="h-[26rem] w-full rounded-xl border border-gray-200 bg-white dark:border-white/10"
+              />
             ) : (
               <div className={`flex h-40 items-center justify-center rounded-xl bg-gradient-to-br ${CERT_GRADIENTS[0]}`}>
                 <Award aria-hidden className="h-16 w-16 text-white" />
@@ -153,7 +161,7 @@ export function Certificates({ certificates }: CertificatesProps) {
               {safeUrl(selected.file_url) && (
                 <a href={safeUrl(selected.file_url)} target="_blank" rel="noopener noreferrer" className="flex-1">
                   <Button variant="outline" className="w-full" leftIcon={<Download className="h-4 w-4" />}>
-                    Open PDF
+                    Open PDF in new tab
                   </Button>
                 </a>
               )}

@@ -203,9 +203,9 @@ export default function AdminProjectsPage() {
                     {uploading === project.id ? (
                       <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <div className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                      <div className={`flex flex-col items-center gap-1 transition-opacity text-white ${project.image_url ? "opacity-0 group-hover:opacity-100" : "opacity-100 [text-shadow:0_1px_6px_rgba(0,0,0,.6)]"}`}>
                         <Upload className="w-5 h-5" />
-                        <span className="text-xs font-medium">{project.image_url ? "Replace" : "Upload"}</span>
+                        <span className="text-xs font-medium">{project.image_url ? "Replace screenshot" : "Upload screenshot"}</span>
                       </div>
                     )}
                   </label>
