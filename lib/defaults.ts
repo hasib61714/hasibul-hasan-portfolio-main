@@ -7,38 +7,31 @@ import type { ContentBlock, Faq } from "@/types";
 export const DEFAULT_FAQS: Faq[] = [
   {
     id: "d1",
-    question: "Where are you based and which time zones do you work in?",
+    question: "Where are you based?",
     answer:
-      "I'm based in Dhaka, Bangladesh (GMT+6) and work remotely. I'm comfortable collaborating asynchronously and can arrange overlap hours with teams in Europe, the Middle East, Asia and the Americas.",
+      "Dhaka, Bangladesh (GMT+6). I work remotely and can overlap with European or US hours if the team needs it.",
     order_index: 1,
   },
   {
     id: "d2",
-    question: "What kind of work are you open to?",
+    question: "What kind of work are you looking for?",
     answer:
-      "Remote full-time roles and contract or freelance projects: full-stack web applications, backend APIs, machine-learning features and AR/VR prototypes.",
+      "Remote full-time roles, plus contract projects when my schedule allows. Mostly web apps and backend work, sometimes ML features.",
     order_index: 2,
   },
   {
     id: "d3",
-    question: "Which technologies do you work with?",
+    question: "What do you work with?",
     answer:
-      "TypeScript, React and Next.js on the front end; Laravel, Node.js and FastAPI on the back end; PostgreSQL, MySQL, MongoDB and Supabase for data; Python and scikit-learn for machine learning; Unity for AR/VR.",
+      "React, Next.js and TypeScript on the front end. Laravel, Node.js and FastAPI on the back end. PostgreSQL, MySQL, MongoDB and Supabase for data. Python with scikit-learn for ML, and Unity for AR/VR.",
     order_index: 3,
   },
   {
     id: "d4",
-    question: "How do we get started?",
+    question: "How do I get in touch?",
     answer:
-      "Send a hire request or an email with a short description of your goals, timeline and budget range. I reply within 24 hours, usually with a few clarifying questions and a proposed next step such as a short call.",
+      "Email or WhatsApp is fastest, or use the contact form. Tell me a bit about the project and when you need it.",
     order_index: 4,
-  },
-  {
-    id: "d5",
-    question: "How do you keep projects on track?",
-    answer:
-      "Work is split into small, reviewable milestones with regular written updates, so you can see progress and give feedback early instead of at the very end.",
-    order_index: 5,
   },
 ];
 
@@ -47,23 +40,21 @@ const block = (section: ContentBlock["section"], i: number, title: string, descr
 });
 
 export const DEFAULT_SERVICES: ContentBlock[] = [
-  block("service", 1, "Full-stack web applications", "Product-grade apps with React and Next.js on the front end and Laravel, Node.js or Supabase behind them.", ["React", "Next.js", "Laravel", "Supabase"], "layers"),
-  block("service", 2, "APIs & backend systems", "Clean, documented REST APIs, authentication, background jobs and database design that scale with your product.", ["REST", "FastAPI", "PostgreSQL", "Node.js"], "server"),
-  block("service", 3, "Machine learning features", "From data cleaning and model training to explainable predictions served through an API your app can call.", ["Python", "Scikit-learn", "NLP", "XAI"], "brain"),
-  block("service", 4, "AR / VR experiences", "Interactive Unity prototypes and XR applications for mobile and wearable devices.", ["Unity", "C#", "AR Foundation"], "glasses"),
-  block("service", 5, "Secure-by-default engineering", "Practical web-security thinking built into the code: validation, access control and safe deployments.", ["OWASP", "Pentesting basics", "Linux"], "shield"),
-  block("service", 6, "Consulting & code review", "An outside set of eyes on architecture, performance and maintainability before small problems get expensive.", ["Architecture", "Performance", "Reviews"], "search"),
+  block("service", 1, "Web applications", "Full-stack apps with React or Next.js on the front and Laravel, Node.js or Supabase behind them.", ["React", "Next.js", "Laravel", "Supabase"], "layers"),
+  block("service", 2, "APIs and databases", "REST APIs, authentication and database design.", ["REST", "FastAPI", "PostgreSQL", "Node.js"], "server"),
+  block("service", 3, "Machine learning", "Cleaning data, training a model, and putting it behind an API your app can call.", ["Python", "Scikit-learn", "NLP"], "brain"),
+  block("service", 4, "AR / VR prototypes", "Unity prototypes for mobile and headsets.", ["Unity", "C#"], "glasses"),
 ];
 
 export const DEFAULT_PROCESS: ContentBlock[] = [
-  block("process", 1, "Discover", "We clarify goals, users, constraints and what success looks like before any code is written."),
-  block("process", 2, "Design", "I propose a simple architecture and interface, and we agree on scope and milestones together."),
-  block("process", 3, "Build", "Iterative development in small, tested increments with regular written updates and demos."),
-  block("process", 4, "Ship & support", "Deployment, documentation and hand-over — plus follow-up so the product keeps working."),
+  block("process", 1, "Talk", "We go over what you need, who it's for and the deadline."),
+  block("process", 2, "Plan", "I write down the scope and a rough milestone list so we agree before I start."),
+  block("process", 3, "Build", "I build in small pieces and send updates as things work."),
+  block("process", 4, "Hand over", "I deploy it, document it, and stay around for fixes."),
 ];
 
 export const DEFAULT_PILLARS: ContentBlock[] = [
-  block("pillar", 1, "What I do", "Full-stack web apps, ML systems, AR/VR experiences and enterprise platforms — React, Next.js, Laravel, FastAPI and Python.", [], "layers"),
-  block("pillar", 2, "How I work", "Clear communication, typed and tested code, small reviewable changes. Comfortable working asynchronously with distributed teams.", [], "building"),
-  block("pillar", 3, "Always learning", "Actively exploring applied ML, AR/VR and security so the systems I build stay modern, fast and safe by default.", [], "lightbulb"),
+  block("pillar", 1, "What I build", "Full-stack web apps, ML projects and some AR/VR.", [], "layers"),
+  block("pillar", 2, "How I work", "Small changes, written updates, and I'm comfortable working async.", [], "building"),
+  block("pillar", 3, "What I'm learning", "Applied ML and security, mostly through side projects.", [], "lightbulb"),
 ];
