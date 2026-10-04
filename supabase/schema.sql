@@ -245,6 +245,14 @@ ON CONFLICT (id) DO UPDATE SET
   file_size_limit    = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
+-- Legacy policies from earlier setups that let ANY signed-in user write files
+DROP POLICY IF EXISTS "Authenticated can upload certificates" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can upload documents"    ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can upload profile"      ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can upload projects"     ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can update storage"      ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can delete storage"      ON storage.objects;
+DROP POLICY IF EXISTS "Public can read documents"             ON storage.objects;
 DROP POLICY IF EXISTS "Portfolio files are public"      ON storage.objects;
 DROP POLICY IF EXISTS "Admin can upload portfolio files" ON storage.objects;
 DROP POLICY IF EXISTS "Admin can update portfolio files" ON storage.objects;
