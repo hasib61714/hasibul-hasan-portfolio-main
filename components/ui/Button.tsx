@@ -25,19 +25,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const base =
-      "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-60 disabled:cursor-not-allowed select-none";
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md",
+        "bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-600/25 ring-1 ring-inset ring-white/15 hover:from-brand-400 hover:to-brand-600 hover:shadow-brand-500/40 hover:-translate-y-0.5 active:translate-y-0",
       secondary:
-        "bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white shadow-lg shadow-accent-500/30 hover:shadow-accent-500/50 hover:-translate-y-0.5",
+        "bg-gradient-to-b from-accent-500 to-accent-600 text-white shadow-lg shadow-accent-600/25 ring-1 ring-inset ring-white/15 hover:from-accent-400 hover:to-accent-600 hover:-translate-y-0.5 active:translate-y-0",
       outline:
-        "border-2 border-brand-500/60 text-brand-600 dark:text-brand-400 hover:bg-brand-500 hover:text-white hover:border-brand-500 hover:-translate-y-0.5 backdrop-blur-sm",
+        "border border-gray-300 dark:border-white/15 text-gray-800 dark:text-gray-100 bg-white/60 dark:bg-white/[0.03] hover:border-brand-500/60 hover:text-brand-600 dark:hover:text-brand-300 hover:bg-brand-50/60 dark:hover:bg-brand-500/10 hover:-translate-y-0.5",
       ghost:
-        "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/80 hover:-translate-y-0.5",
+        "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/[0.06]",
       danger:
-        "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:-translate-y-0.5",
+        "bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 ring-1 ring-inset ring-white/15 hover:from-red-400 hover:to-red-600 hover:-translate-y-0.5",
     };
 
     const sizes = {

@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate } from "@/lib/utils";
+import { formatDate, safeUrl } from "@/lib/utils";
+import { buildStoragePath, storagePathFromUrl, validateUpload } from "@/lib/upload";
+import { optionalHttpUrl } from "@/lib/validation";
 import toast from "react-hot-toast";
 import type { Certificate } from "@/types";
 
@@ -20,7 +22,7 @@ const certSchema = z.object({
   issuer:         z.string().min(1),
   issue_date:     z.string().min(1),
   expiry_date:    z.string().optional(),
-  credential_url: z.string().url().optional().or(z.literal("")),
+  credential_url: optionalHttpUrl,
   description:    z.string().optional(),
 });
 type CertFormData = z.input<typeof certSchema>;
@@ -39,7 +41,8 @@ export default function AdminCertificatesPage() {
 
   const fetchCerts = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase.from("certificates").select("*").order("issue_date", { ascending: false });
+    const { data, error } = await supabase.from("certificates").select("*").order("issue_date", { ascending: false });
+    if (error) toast.error("Failed to load certificates: " + error.message);
     setCerts(data ?? []);
     setLoading(false);
   }, []);
@@ -47,17 +50,30 @@ export default function AdminCertificatesPage() {
   useEffect(() => { fetchCerts(); }, [fetchCerts]);
 
   const handleFileUpload = async (file: File, certId: string, type: "image" | "file") => {
+    const problem = await validateUpload(file, type === "image" ? "image" : "pdf");
+    if (problem) { toast.error(problem); return null; }
+
     const supabase = createClient();
     setUploading(true);
-    const ext  = file.name.split(".").pop();
-    const path = `${certId}/${type}.${ext}`;
-    const { error, data } = await supabase.storage
+    const path = buildStoragePath(certId, file);
+    const { error } = await supabase.storage
       .from("certificates")
-      .upload(path, file, { upsert: true });
-    if (error) { toast.error("Upload failed"); setUploading(false); return null; }
+      .upload(path, file, { contentType: file.type });
+    if (error) { toast.error("Upload failed: " + error.message); setUploading(false); return null; }
     const { data: url } = supabase.storage.from("certificates").getPublicUrl(path);
     setUploading(false);
     return url.publicUrl;
+  };
+
+  /** Stores a freshly uploaded file URL and removes the file it replaces. */
+  const attachFile = async (cert: Pick<Certificate, "id" | "image_url" | "file_url">, url: string, type: "image" | "file") => {
+    const supabase = createClient();
+    const column = type === "image" ? "image_url" : "file_url";
+    const { error } = await supabase.from("certificates").update({ [column]: url }).eq("id", cert.id);
+    if (error) { toast.error("Failed to save file link: " + error.message); return false; }
+    const previous = storagePathFromUrl(cert[column], "certificates");
+    if (previous) await supabase.storage.from("certificates").remove([previous]);
+    return true;
   };
 
   const openCreate = () => {
@@ -91,24 +107,27 @@ export default function AdminCertificatesPage() {
     };
 
     let certId: string;
+    let current: Pick<Certificate, "id" | "image_url" | "file_url">;
     if (editing) {
       const { error } = await supabase.from("certificates").update(payload).eq("id", editing.id);
       if (error) { toast.error("Failed to update"); return; }
       certId = editing.id;
+      current = editing;
     } else {
       const { data: inserted, error } = await supabase.from("certificates").insert(payload).select("id").single();
       if (error || !inserted) { toast.error("Failed to create"); return; }
       certId = inserted.id;
+      current = { id: inserted.id, image_url: undefined, file_url: undefined };
     }
 
     // Upload pending files
     if (pendingImage) {
       const url = await handleFileUpload(pendingImage, certId, "image");
-      if (url) await supabase.from("certificates").update({ image_url: url }).eq("id", certId);
+      if (url) await attachFile(current, url, "image");
     }
     if (pendingPdf) {
       const url = await handleFileUpload(pendingPdf, certId, "file");
-      if (url) await supabase.from("certificates").update({ file_url: url }).eq("id", certId);
+      if (url) await attachFile(current, url, "file");
     }
 
     toast.success(editing ? "Certificate updated!" : "Certificate added!");
@@ -121,9 +140,15 @@ export default function AdminCertificatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this certificate?")) return;
     const supabase = createClient();
+    const target = certs.find((c) => c.id === id);
     const { error } = await supabase.from("certificates").delete().eq("id", id);
-    if (error) toast.error("Failed to delete");
-    else { toast.success("Deleted"); fetchCerts(); }
+    if (error) { toast.error("Failed to delete"); return; }
+    const files = [target?.image_url, target?.file_url]
+      .map((u) => storagePathFromUrl(u, "certificates"))
+      .filter((p): p is string => !!p);
+    if (files.length) await supabase.storage.from("certificates").remove(files);
+    toast.success("Deleted");
+    fetchCerts();
   };
 
   return (
@@ -148,9 +173,9 @@ export default function AdminCertificatesPage() {
                   ) : (
                     <Award className="w-10 h-10 text-white opacity-80" />
                   )}
-                  {cert.file_url && (
+                  {safeUrl(cert.file_url) && (
                     <a
-                      href={cert.file_url}
+                      href={safeUrl(cert.file_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-black/50 text-white text-xs font-semibold hover:bg-black/70 transition-colors"
@@ -170,15 +195,14 @@ export default function AdminCertificatesPage() {
                     <label className="flex-1 cursor-pointer">
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp"
                         className="hidden"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           const url = await handleFileUpload(file, cert.id, "image");
-                          if (url) {
-                            const supabase = createClient();
-                            await supabase.from("certificates").update({ image_url: url }).eq("id", cert.id);
+                          e.target.value = "";
+                          if (url && (await attachFile(cert, url, "image"))) {
                             toast.success("Image uploaded!");
                             fetchCerts();
                           }
@@ -192,15 +216,14 @@ export default function AdminCertificatesPage() {
                     <label className="flex-1 cursor-pointer">
                       <input
                         type="file"
-                        accept=".pdf"
+                        accept="application/pdf"
                         className="hidden"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           const url = await handleFileUpload(file, cert.id, "file");
-                          if (url) {
-                            const supabase = createClient();
-                            await supabase.from("certificates").update({ file_url: url }).eq("id", cert.id);
+                          e.target.value = "";
+                          if (url && (await attachFile(cert, url, "file"))) {
                             toast.success("PDF uploaded!");
                             fetchCerts();
                           }
@@ -244,7 +267,7 @@ export default function AdminCertificatesPage() {
             <div>
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Certificate Image</p>
               <label className="cursor-pointer block">
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => setPendingImage(e.target.files?.[0] ?? null)} />
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => setPendingImage(e.target.files?.[0] ?? null)} />
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500 transition-colors text-sm text-gray-500 dark:text-gray-400">
                   <Upload className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">{pendingImage ? pendingImage.name : "Choose image..."}</span>
@@ -254,7 +277,7 @@ export default function AdminCertificatesPage() {
             <div>
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">PDF Certificate</p>
               <label className="cursor-pointer block">
-                <input type="file" accept=".pdf" className="hidden" onChange={(e) => setPendingPdf(e.target.files?.[0] ?? null)} />
+                <input type="file" accept="application/pdf" className="hidden" onChange={(e) => setPendingPdf(e.target.files?.[0] ?? null)} />
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500 transition-colors text-sm text-gray-500 dark:text-gray-400">
                   <Upload className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">{pendingPdf ? pendingPdf.name : "Choose PDF..."}</span>

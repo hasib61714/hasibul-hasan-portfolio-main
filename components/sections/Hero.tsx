@@ -1,277 +1,230 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Download, Mail, ExternalLink, Sparkles } from "lucide-react";
+import { ArrowRight, Download, Globe2, Mail, MapPin, Clock } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
-import { GITHUB_URL, LINKEDIN_URL, EMAIL_ADDRESS } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { SITE } from "@/lib/site";
+import { mailtoHref, safeUrl } from "@/lib/utils";
+
+interface HeroProps {
+  avatarUrl: string | null;
+  cvUrl?: string;
+  projectCount: number;
+  certificateCount: number;
+}
 
 const SOCIAL_LINKS = [
-  { icon: GitHubIcon,   href: GITHUB_URL,               label: "GitHub"   },
-  { icon: LinkedInIcon, href: LINKEDIN_URL,              label: "LinkedIn" },
-  { icon: Mail,         href: `mailto:${EMAIL_ADDRESS}`, label: "Email"    },
+  { icon: GitHubIcon,   href: SITE.github,            label: "GitHub"   },
+  { icon: LinkedInIcon, href: SITE.linkedin,          label: "LinkedIn" },
+  { icon: Mail,         href: mailtoHref(SITE.email), label: "Email"    },
 ];
 
-const TECH_BADGES = ["React", "Next.js", "TypeScript", "Laravel", "Python", "Supabase"];
-
-const STATS = [
-  { value: "3+",   label: "Years Exp.",          color: "from-brand-500 to-cyan-500"   },
-  { value: "10+",  label: "Projects",             color: "from-accent-500 to-pink-500"  },
-  { value: "100%", label: "Client Satisfaction",  color: "from-green-500 to-emerald-500" },
+const TECH_MARQUEE = [
+  "React", "Next.js", "TypeScript", "Node.js", "Laravel", "Python", "FastAPI",
+  "PostgreSQL", "Supabase", "Docker", "Tailwind CSS", "Scikit-learn", "Unity", "REST APIs",
 ];
 
-export function Hero() {
-  const [profilePicUrl, setProfilePicUrl] = useState<string>("");
-  const [profilePicError, setProfilePicError] = useState(false);
+const scrollTo = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
-  useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
-    const supabase = createClient();
-    const { data } = supabase.storage.from("profile").getPublicUrl("avatar/current");
-    setProfilePicUrl(data.publicUrl);
-  }, []);
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
+});
 
-  const scrollToProjects = () => {
-    document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
-  };
-  const scrollToHire = () => {
-    document.getElementById("hire")?.scrollIntoView({ behavior: "smooth" });
-  };
+export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroProps) {
+  const cvHref = safeUrl(cvUrl);
+  const stats = [
+    { value: SITE.yearsExperience, label: "Years exp." },
+    { value: String(projectCount), label: "Projects" },
+    { value: String(certificateCount), label: "Certificates" },
+  ];
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden mesh-gradient"
-    >
-      {/* ── Aurora background ── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Large aurora blobs */}
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-brand-400/25 to-cyan-400/15 dark:from-brand-600/20 dark:to-cyan-600/10 blur-[100px] animate-blob" />
-        <div className="absolute -top-20 -right-40 w-[500px] h-[500px] rounded-full bg-gradient-to-bl from-accent-400/20 to-purple-400/15 dark:from-accent-600/15 dark:to-purple-600/10 blur-[100px] animate-blob animation-delay-2000" />
-        <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-cyan-400/15 to-brand-400/10 blur-[80px] animate-blob animation-delay-4000" />
+    <section id="hero" className="relative flex min-h-[100svh] flex-col overflow-hidden mesh-gradient">
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />
+      <div aria-hidden className="pointer-events-none absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white dark:from-gray-950 to-transparent" />
 
-        {/* Dot grid */}
-        <div
-          className="absolute inset-0 opacity-[0.025] dark:opacity-[0.04]"
-          style={{
-            backgroundImage: "radial-gradient(circle, #3b82f6 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white dark:from-gray-950 to-transparent" />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-
-          {/* ── Left column ── */}
-          <div className="order-2 lg:order-1 space-y-7">
-
-            {/* Available badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex"
-            >
-              <span className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-green-500/30 bg-green-50/80 dark:bg-green-900/20 backdrop-blur-sm text-green-600 dark:text-green-400 text-sm font-medium shadow-sm">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-4 pt-28 pb-14 sm:px-6 lg:px-8">
+        <div className="grid w-full grid-cols-1 items-center gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
+          {/* ── Copy ── */}
+          <div className="space-y-7">
+            <motion.div {...fadeUp(0)}>
+              <span className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                Available for new projects
+                {SITE.availability}
               </span>
             </motion.div>
 
-            {/* Heading */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.08] tracking-tight">
-                <span className="block text-gray-900 dark:text-white">Hi, I&apos;m</span>
-                <span className="block gradient-text mt-1">Md.Hasibul Hasan</span>
-                <span className="block text-gray-500 dark:text-gray-400 text-4xl md:text-5xl lg:text-6xl font-bold mt-2">
-                  Software &amp; ML Engineer
-                </span>
+            <motion.div {...fadeUp(0.08)} className="space-y-4">
+              <p className="eyebrow">Hi, I&apos;m {SITE.name}</p>
+              <h1 className="text-balance text-4xl font-bold leading-[1.08] tracking-tight text-gray-900 dark:text-white sm:text-5xl xl:text-6xl">
+                I build reliable web platforms{" "}
+                <span className="gradient-text">&amp; ML systems</span>{" "}
+                for teams worldwide.
               </h1>
             </motion.div>
 
-            {/* Description */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed max-w-lg"
-            >
-              I build production-grade full-stack web apps, machine learning
-              systems, and enterprise platforms. Currently a Software Engineer
-              at Red Data — passionate about clean code and impactful solutions.
+            <motion.p {...fadeUp(0.16)} className="max-w-xl text-pretty text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+              Software Engineer at Red Data with a full-stack focus — React, Next.js, Laravel and
+              Python — plus applied ML and AR/VR. I care about clean architecture, performance and
+              shipping things that hold up in production.
             </motion.p>
 
-            {/* Tech badges */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap gap-2"
-            >
-              {TECH_BADGES.map((tech, i) => (
-                <motion.span
-                  key={tech}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.35 + i * 0.05 }}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl glass-card text-gray-700 dark:text-gray-300 hover:border-brand-400/50 hover:text-brand-600 dark:hover:text-brand-400 transition-colors duration-200 cursor-default"
+            <motion.ul {...fadeUp(0.22)} className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-brand-500" />{SITE.location}</li>
+              <li className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4 text-brand-500" />{SITE.timezone} · async-friendly</li>
+              <li className="inline-flex items-center gap-1.5"><Globe2 className="h-4 w-4 text-brand-500" />Remote-first</li>
+            </motion.ul>
+
+            <motion.div {...fadeUp(0.28)} className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => scrollTo("hire")}
+                className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-brand-600/30 ring-1 ring-inset ring-white/15 transition-all hover:-translate-y-0.5 hover:from-brand-400 hover:shadow-brand-500/40"
+              >
+                Hire me
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollTo("projects")}
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white/70 px-6 py-3.5 text-base font-semibold text-gray-800 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-brand-500/60 dark:border-white/15 dark:bg-white/[0.04] dark:text-gray-100 dark:hover:border-brand-400/60"
+              >
+                View projects
+              </button>
+              {cvHref ? (
+                <a
+                  href={cvHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-3.5 text-base font-semibold text-gray-600 transition-colors hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-300"
                 >
-                  {tech}
-                </motion.span>
-              ))}
+                  <Download className="h-4 w-4" />
+                  Download CV
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => scrollTo("resume")}
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-3.5 text-base font-semibold text-gray-600 transition-colors hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-300"
+                >
+                  <Download className="h-4 w-4" />
+                  Resume
+                </button>
+              )}
             </motion.div>
 
-            {/* CTA buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-wrap gap-3"
-            >
-              <motion.button
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={scrollToHire}
-                className="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-brand-500 via-brand-500 to-accent-500 text-white font-semibold text-base shadow-xl shadow-brand-500/30 hover:shadow-brand-500/50 transition-shadow duration-300"
-              >
-                <Sparkles className="w-5 h-5" />
-                Hire Me
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={scrollToProjects}
-                className="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl glass-card border border-brand-500/30 hover:border-brand-500 text-brand-600 dark:text-brand-400 font-semibold text-base hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all duration-200"
-              >
-                <ExternalLink className="w-5 h-5" />
-                View Work
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => document.getElementById("resume")?.scrollIntoView({ behavior: "smooth" })}
-                className="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-gray-600 dark:text-gray-400 font-semibold text-base hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
-              >
-                <Download className="w-5 h-5" />
-                Download CV
-              </motion.button>
-            </motion.div>
-
-            {/* Social links */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="flex items-center gap-3 pt-1"
-            >
-              <span className="text-sm text-gray-400">Find me on:</span>
+            <motion.div {...fadeUp(0.34)} className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">Find me on</span>
               <div className="flex gap-2">
                 {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
-                  <motion.a
+                  <a
                     key={label}
                     href={href}
-                    target="_blank"
+                    target={href.startsWith("mailto:") ? undefined : "_blank"}
                     rel="noopener noreferrer"
                     aria-label={label}
-                    whileHover={{ scale: 1.15, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400 hover:border-brand-400/40 transition-colors duration-200"
+                    className="grid h-9 w-9 place-items-center rounded-xl border border-gray-200 bg-white/70 text-gray-500 transition-all hover:-translate-y-0.5 hover:border-brand-500/50 hover:text-brand-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-400 dark:hover:text-brand-300"
                   >
-                    <Icon className="w-4 h-4" />
-                  </motion.a>
+                    <Icon className="h-4 w-4" />
+                  </a>
                 ))}
               </div>
             </motion.div>
           </div>
 
-          {/* ── Right column — avatar ── */}
+          {/* ── Portrait + code card ── */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="order-1 lg:order-2 flex justify-center"
+            transition={{ duration: 0.8, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+            className="flex justify-center"
           >
-            <div className="relative">
-              {/* Outer glow ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-brand-500 to-accent-500 blur-3xl opacity-20 scale-110 animate-pulse-slow" />
+            <div className="relative w-full max-w-[19rem] sm:max-w-sm">
+              <div aria-hidden className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-brand-500/30 via-accent-500/20 to-cyan-400/20 blur-3xl" />
 
-              {/* Rotating dashed ring */}
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-[-12px] rounded-full border-2 border-dashed border-brand-400/25"
-              />
-
-              {/* Avatar frame */}
-              <div className="relative w-72 h-72 md:w-[340px] md:h-[340px] rounded-full p-1 bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 shadow-2xl shadow-brand-500/25">
-                <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center text-[100px] select-none">
-                  {profilePicUrl && !profilePicError ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={profilePicUrl}
-                      alt="Hasibul Hasan"
-                      className="w-full h-full object-cover"
-                      onError={() => setProfilePicError(true)}
+              <div className="relative aspect-[4/5] rounded-3xl bg-gradient-to-br from-brand-400 via-accent-400 to-cyan-400 p-[1.5px] shadow-2xl shadow-brand-600/25">
+                <div className="relative h-full w-full overflow-hidden rounded-[calc(1.5rem-1.5px)] bg-gray-100 dark:bg-gray-900">
+                  {avatarUrl ? (
+                    <Image
+                      src={avatarUrl}
+                      alt={`Portrait of ${SITE.name}`}
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 384px, 90vw"
+                      className="object-cover"
                     />
                   ) : (
-                    "👨‍💻"
+                    <div className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-500/10 via-transparent to-cyan-400/10">
+                      <span className="gradient-text select-none text-8xl font-bold tracking-tighter">HH</span>
+                    </div>
                   )}
+
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-950/85 via-gray-950/40 to-transparent p-4 pt-16">
+                    <p className="text-sm font-semibold text-white">{SITE.name}</p>
+                    <p className="text-xs text-gray-300">{SITE.role}</p>
+                    <dl className="mt-3 grid grid-cols-3 gap-2">
+                      {stats.map((s) => (
+                        <div key={s.label} className="rounded-xl border border-white/10 bg-white/10 px-2 py-2 text-center backdrop-blur-md">
+                          <dd className="text-lg font-bold leading-none text-white">{s.value}</dd>
+                          <dt className="mt-1 text-[11px] text-gray-300">{s.label}</dt>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
                 </div>
               </div>
 
-              {/* Floating stat cards */}
-              {STATS.map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.7 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.7 + i * 0.15, type: "spring", stiffness: 200 }}
-                  className={`absolute glass-strong rounded-2xl px-4 py-3 shadow-xl ${
-                    i === 0 ? "-left-10 top-14" :
-                    i === 1 ? "-right-10 top-1/3" :
-                    "-bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap"
-                  }`}
-                >
-                  <p className={`text-2xl font-extrabold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
-                </motion.div>
-              ))}
+              {/* Code card */}
+              <motion.div
+                aria-hidden
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7, duration: 0.6 }}
+                className="relative z-10 mx-3 mt-4 rounded-2xl border border-gray-200/80 bg-white/90 p-4 font-mono text-[11px] leading-relaxed shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/85 sm:absolute sm:-right-6 sm:-top-8 sm:mx-0 sm:mt-0 sm:w-60 xl:-right-14"
+              >
+                <div className="mb-2 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-red-400" />
+                  <span className="h-2 w-2 rounded-full bg-amber-400" />
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                </div>
+                <p><span className="text-accent-600 dark:text-accent-400">const</span> <span className="text-brand-600 dark:text-brand-300">hasibul</span> = {"{"}</p>
+                <p className="pl-3">role: <span className="text-emerald-600 dark:text-emerald-300">&quot;Software Engineer&quot;</span>,</p>
+                <p className="pl-3">stack: <span className="text-emerald-600 dark:text-emerald-300">[&quot;Next.js&quot;, &quot;Laravel&quot;, &quot;Python&quot;]</span>,</p>
+                <p className="pl-3">focus: <span className="text-emerald-600 dark:text-emerald-300">[&quot;ML&quot;, &quot;AR/VR&quot;]</span>,</p>
+                <p className="pl-3">timezone: <span className="text-emerald-600 dark:text-emerald-300">&quot;{SITE.timezone}&quot;</span>,</p>
+                <p className="pl-3">openTo: <span className="text-emerald-600 dark:text-emerald-300">&quot;remote&quot;</span>,</p>
+                <p>{"}"}</p>
+              </motion.div>
             </div>
           </motion.div>
         </div>
+      </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500"
-        >
-          <span className="text-xs font-medium tracking-widest uppercase">Scroll down</span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="w-6 h-9 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-start justify-center pt-1.5"
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
-          </motion.div>
-        </motion.div>
+      {/* Technology marquee */}
+      <div className="relative z-10 border-y border-gray-200/70 bg-white/50 py-5 backdrop-blur-sm dark:border-white/[0.06] dark:bg-white/[0.02]">
+        <p className="eyebrow mb-4 text-center !text-gray-500 dark:!text-gray-500">Technologies I ship with</p>
+        <div className="group flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_12%,#000_88%,transparent)]">
+          {[0, 1].map((copy) => (
+            <ul
+              key={copy}
+              aria-hidden={copy === 1}
+              className="flex shrink-0 animate-marquee items-center gap-10 pr-10 group-hover:[animation-play-state:paused]"
+            >
+              {TECH_MARQUEE.map((tech) => (
+                <li key={tech} className="whitespace-nowrap font-mono text-sm text-gray-500 dark:text-gray-400">
+                  {tech}
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
       </div>
     </section>
   );

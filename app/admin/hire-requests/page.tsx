@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate } from "@/lib/utils";
+import { formatDate, mailtoHref } from "@/lib/utils";
 import toast from "react-hot-toast";
 import type { HireRequest } from "@/types";
 
@@ -24,10 +24,11 @@ export default function AdminHireRequestsPage() {
 
   const fetchRequests = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("hire_requests")
       .select("*")
       .order("created_at", { ascending: false });
+    if (error) toast.error("Failed to load requests: " + error.message);
     setRequests(data ?? []);
     setLoading(false);
   }, []);
@@ -46,7 +47,8 @@ export default function AdminHireRequestsPage() {
   const deleteRequest = async (id: string) => {
     if (!confirm("Delete this hire request?")) return;
     const supabase = createClient();
-    await supabase.from("hire_requests").delete().eq("id", id);
+    const { error } = await supabase.from("hire_requests").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete request"); return; }
     toast.success("Request deleted");
     if (selected?.id === id) setSelected(null);
     fetchRequests();
@@ -204,7 +206,7 @@ export default function AdminHireRequestsPage() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <a href={`mailto:${selected.email}`} className="flex-1">
+              <a href={mailtoHref(selected.email, `Re: your ${selected.project_type} project`)} className="flex-1">
                 <Button className="w-full" size="sm">Reply via Email</Button>
               </a>
               <Button variant="danger" size="sm" onClick={() => deleteRequest(selected.id)}>Delete</Button>

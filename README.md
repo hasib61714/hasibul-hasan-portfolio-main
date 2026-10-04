@@ -25,16 +25,17 @@ A modern, full-stack personal portfolio built with **Next.js 15**, **TypeScript*
 
 ## Features
 
-- **Hero** — Profile picture upload from admin, animated stats, social links
-- **About** — Story, skills summary, work info
-- **Experience** — Timeline of work experience
+- **Hero** — Profile picture upload from admin, live stats, availability & timezone, social links
+- **About** — Bento layout: story, current role, education, working style, core stack
+- **Experience** — Timeline of work experience and education
 - **Skills** — Grouped category cards with proficiency indicators
-- **Projects** — Dynamic project cards with live/GitHub links
-- **Certificates** — Certificate gallery with PDF/image support
-- **Resume** — CV & Cover Letter download
-- **Contact** — Email contact form
-- **Hire Me** — Hire request form
-- **Admin Panel** — Full CRUD for all sections, protected by Supabase Auth
+- **Projects** — Dynamic project cards with live/source links
+- **Certificates** — Certificate gallery with credential verification and PDF/image support
+- **Resume** — CV & Cover Letter preview/download
+- **Hire Me / Contact** — Validated, rate-limited, spam-protected forms
+- **Admin Panel** — Full CRUD for all sections, restricted to registered admins
+- **Global-ready** — USD budgets, timezone/availability info, SEO (Open Graph image, sitemap, robots, JSON-LD), light/dark theme, reduced-motion & keyboard accessible
+- **Fast** — Server-rendered content cached for 60 s (ISR); no Supabase client shipped to public visitors
 
 ---
 
@@ -62,9 +63,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ### 3. Supabase Setup
 
 1. Go to [supabase.com](https://supabase.com) → New Project
-2. **SQL Editor** → run `supabase/schema.sql`
-3. **Storage** → create public buckets: `documents`, `certificates`, `projects`, `profile`
-4. **Authentication** → create an admin user
+2. **Authentication** → Users → add your admin user, then turn **off** public sign-ups (Authentication → Providers → Email)
+3. **SQL Editor** → run `supabase/schema.sql`. It creates the tables, RLS policies, storage buckets
+   (`documents`, `certificates`, `projects`, `profile`) with size/type limits and storage policies, and registers
+   your admin account. It is idempotent — re-run it any time to upgrade an existing project.
+   If your admin e-mail differs from `mh.hasan14200@gmail.com`, edit it in the `INSERT INTO admin_users` statement.
 
 ### 4. Run Locally
 
@@ -76,7 +79,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ### 5. Admin Access
 
-Go to `/auth/login` and sign in with your Supabase admin credentials.
+Go to `/auth/login` and sign in with your admin credentials. Only users listed in the `admin_users` table can access the panel or write data.
 
 ---
 

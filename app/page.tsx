@@ -9,19 +9,31 @@ import { Certificates } from "@/components/sections/Certificates";
 import { Resume } from "@/components/sections/Resume";
 import { HireMe } from "@/components/sections/HireMe";
 import { Contact } from "@/components/sections/Contact";
+import { getPortfolioData } from "@/lib/data";
 
-export default function HomePage() {
+// Content is read on the server and cached; admin edits appear within a minute.
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const { projects, skills, certificates, documents, avatarUrl } = await getPortfolioData();
+  const cv = documents.find((d) => d.type === "cv");
+
   return (
     <>
       <Navbar />
-      <main>
-        <Hero />
-        <About />
+      <main id="main">
+        <Hero
+          avatarUrl={avatarUrl}
+          cvUrl={cv?.file_url}
+          projectCount={projects.length}
+          certificateCount={certificates.length}
+        />
+        <About certificateCount={certificates.length} projectCount={projects.length} />
         <Experience />
-        <Skills />
-        <Projects />
-        <Certificates />
-        <Resume />
+        <Skills skills={skills} />
+        <Projects projects={projects} />
+        <Certificates certificates={certificates} />
+        <Resume documents={documents} />
         <HireMe />
         <Contact />
       </main>

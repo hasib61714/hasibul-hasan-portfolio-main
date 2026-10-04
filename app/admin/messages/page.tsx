@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate } from "@/lib/utils";
+import { formatDate, mailtoHref } from "@/lib/utils";
 import toast from "react-hot-toast";
 import type { ContactMessage } from "@/types";
 
@@ -20,10 +20,11 @@ export default function AdminMessagesPage() {
 
   const fetchMessages = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("contacts")
       .select("*")
       .order("created_at", { ascending: false });
+    if (error) toast.error("Failed to load messages: " + error.message);
     setMessages(data ?? []);
     setLoading(false);
   }, []);
@@ -42,7 +43,8 @@ export default function AdminMessagesPage() {
   const deleteMessage = async (id: string) => {
     if (!confirm("Delete this message?")) return;
     const supabase = createClient();
-    await supabase.from("contacts").delete().eq("id", id);
+    const { error } = await supabase.from("contacts").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete message"); return; }
     toast.success("Message deleted");
     if (selected?.id === id) setSelected(null);
     fetchMessages();
@@ -50,7 +52,8 @@ export default function AdminMessagesPage() {
 
   const markAllRead = async () => {
     const supabase = createClient();
-    await supabase.from("contacts").update({ is_read: true }).eq("is_read", false);
+    const { error } = await supabase.from("contacts").update({ is_read: true }).eq("is_read", false);
+    if (error) { toast.error("Failed to update messages"); return; }
     toast.success("All marked as read");
     fetchMessages();
   };
@@ -177,7 +180,7 @@ export default function AdminMessagesPage() {
 
               <div className="mt-8 pt-5 border-t border-gray-100 dark:border-gray-800">
                 <a
-                  href={`mailto:${selected.email}?subject=Re: ${selected.subject || "Your message"}`}
+                  href={mailtoHref(selected.email, `Re: ${selected.subject || "Your message"}`)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white text-sm font-semibold transition-all shadow-md shadow-brand-500/20"
                 >
                   <Mail className="w-4 h-4" />
