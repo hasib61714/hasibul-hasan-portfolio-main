@@ -164,25 +164,35 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
             </motion.div>
           </div>
 
-          {/* ── Portrait + code card ── */}
+          {/* ── Circular portrait ── */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="flex justify-center"
           >
-            <motion.div ref={portraitRef} style={{ y: portraitY }} className="relative w-full max-w-[19rem] sm:max-w-sm">
-              <div aria-hidden className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-brand-500/30 via-accent-500/20 to-cyan-400/20 blur-3xl" />
+            <motion.div ref={portraitRef} style={{ y: portraitY }} className="relative">
+              {/* Soft glow */}
+              <div aria-hidden className="absolute inset-0 scale-110 rounded-full bg-gradient-to-br from-brand-500 to-accent-500 opacity-25 blur-3xl animate-pulse-slow" />
 
-              <div className="relative aspect-[4/5] rounded-3xl bg-gradient-to-br from-brand-400 via-accent-400 to-cyan-400 p-[1.5px] shadow-2xl shadow-brand-600/25">
-                <div className="relative h-full w-full overflow-hidden rounded-[calc(1.5rem-1.5px)] bg-white dark:bg-gray-900">
+              {/* Rotating dashed ring */}
+              <motion.div
+                aria-hidden
+                animate={{ rotate: 360 }}
+                transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-3 rounded-full border-2 border-dashed border-brand-400/30"
+              />
+
+              {/* Avatar frame */}
+              <div className="relative h-72 w-72 rounded-full bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 p-1 shadow-2xl shadow-brand-600/30 sm:h-80 sm:w-80 lg:h-[22rem] lg:w-[22rem]">
+                <div className="relative h-full w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-900">
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
                       alt={`Portrait of ${SITE.name}`}
                       fill
                       priority
-                      sizes="(min-width: 1024px) 384px, 90vw"
+                      sizes="(min-width: 1024px) 352px, 320px"
                       className="object-cover object-top"
                     />
                   ) : (
@@ -190,15 +200,27 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                       <span className="gradient-text select-none text-8xl font-bold tracking-tighter">HH</span>
                     </div>
                   )}
-
-                  <div className="glass-strong absolute inset-x-3 bottom-3 rounded-xl px-3.5 py-2.5">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{SITE.name}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">{SITE.role}</p>
-                  </div>
                 </div>
               </div>
 
-              <dl className="mt-3 grid grid-cols-3 gap-2">
+              {/* Floating stat cards (large screens) */}
+              {stats.map((st, i) => (
+                <motion.div
+                  key={st.label}
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.7 + i * 0.15, type: "spring", stiffness: 200 }}
+                  className={`glass-strong absolute hidden rounded-2xl px-4 py-3 shadow-xl lg:block ${
+                    i === 0 ? "-left-10 top-14" : i === 1 ? "-right-10 top-1/3" : "-bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap"
+                  }`}
+                >
+                  <p className="gradient-text text-2xl font-extrabold leading-none"><CountUp value={st.value} /></p>
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{st.label}</p>
+                </motion.div>
+              ))}
+
+              {/* Stats row (smaller screens) */}
+              <dl className="mt-8 grid grid-cols-3 gap-2 lg:hidden">
                 {stats.map((st) => (
                   <div key={st.label} className="card-premium rounded-xl px-2 py-3 text-center">
                     <dd className="relative z-10 text-xl font-bold leading-none text-gray-900 dark:text-white"><CountUp value={st.value} /></dd>
@@ -206,30 +228,6 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                   </div>
                 ))}
               </dl>
-
-              {/* Code card (only while there is no photo — the portrait is the focal point) */}
-              {!avatarUrl && (
-              <motion.div
-                aria-hidden
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.6 }}
-                className="relative z-10 mx-3 mt-4 rounded-2xl border border-gray-200/80 bg-white/90 p-4 font-mono text-[11px] leading-relaxed shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/85 sm:absolute sm:-right-6 sm:-top-8 sm:mx-0 sm:mt-0 sm:w-60 xl:-right-14"
-              >
-                <div className="mb-2 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-red-400" />
-                  <span className="h-2 w-2 rounded-full bg-amber-400" />
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                </div>
-                <p><span className="text-accent-600 dark:text-accent-400">const</span> <span className="text-brand-600 dark:text-brand-300">hasibul</span> = {"{"}</p>
-                <p className="pl-3">role: <span className="text-emerald-600 dark:text-emerald-300">&quot;Software Engineer&quot;</span>,</p>
-                <p className="pl-3">stack: <span className="text-emerald-600 dark:text-emerald-300">[&quot;Next.js&quot;, &quot;Laravel&quot;, &quot;Python&quot;]</span>,</p>
-                <p className="pl-3">focus: <span className="text-emerald-600 dark:text-emerald-300">[&quot;ML&quot;, &quot;AR/VR&quot;]</span>,</p>
-                <p className="pl-3">timezone: <span className="text-emerald-600 dark:text-emerald-300">&quot;{SITE.timezone}&quot;</span>,</p>
-                <p className="pl-3">openTo: <span className="text-emerald-600 dark:text-emerald-300">&quot;remote&quot;</span>,</p>
-                <p>{"}"}</p>
-              </motion.div>
-              )}
             </motion.div>
           </motion.div>
         </div>
