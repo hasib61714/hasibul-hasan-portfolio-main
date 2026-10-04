@@ -134,13 +134,13 @@
   .card-premium {
     position: relative;
     background: #ffffff;
-    border: 1px solid rgba(15,23,42,0.08);
-    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+    border: 1px solid rgba(15,23,42,0.13);
+    box-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 10px 24px -14px rgba(15,23,42,0.18);
     transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
   }
   .card-premium:hover {
-    border-color: rgba(99,102,241,0.35);
-    box-shadow: 0 12px 32px -8px rgba(79,70,229,0.18);
+    border-color: rgba(99,102,241,0.45);
+    box-shadow: 0 14px 34px -10px rgba(79,70,229,0.28);
   }
   .dark .card-premium {
     background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
@@ -208,11 +208,11 @@
   }
 
   .mesh-gradient {
-    background-color: #ffffff;
+    background-color: #eef0f7;
     background-image:
-      radial-gradient(60% 50% at 15% 0%,  rgba(99,102,241,0.14) 0px, transparent 70%),
-      radial-gradient(50% 45% at 90% 10%, rgba(139,92,246,0.10) 0px, transparent 70%),
-      radial-gradient(40% 40% at 50% 100%, rgba(34,211,238,0.08) 0px, transparent 70%);
+      radial-gradient(60% 50% at 15% 0%,  rgba(99,102,241,0.20) 0px, transparent 70%),
+      radial-gradient(50% 45% at 90% 10%, rgba(139,92,246,0.14) 0px, transparent 70%),
+      radial-gradient(40% 40% at 50% 100%, rgba(34,211,238,0.12) 0px, transparent 70%);
   }
   .dark .mesh-gradient {
     background-color: #030712;
@@ -255,6 +255,24 @@
   }
 }
 
+/*
+ * Light theme refinements.
+ * The page uses soft slate surfaces (instead of pure white) so white cards stand out,
+ * and muted text is one step darker for readable contrast. They live in the utilities
+ * layer with :where() so hover/dark variants still win. Anything inside a `.dark` element
+ * (the footer, the login screen) keeps its own light-on-dark colours.
+ */
+@layer utilities {
+  :where(html:not(.dark)) :is(body, section).bg-white { background-color: #f1f3f9; }
+  :where(html:not(.dark)) section[class*="bg-gray-50"] { background-color: #e6e9f3; }
+  :where(html:not(.dark)) .from-white { --tw-gradient-from: #eef0f7; }
+  :where(html:not(.dark)) .text-gray-400:not(.dark, .dark *) { color: #6b7280; }
+  :where(html:not(.dark)) .text-gray-500:not(.dark, .dark *) { color: #4b5563; }
+  :where(html:not(.dark)) .text-gray-600:not(.dark, .dark *) { color: #374151; }
+  :where(html:not(.dark)) .border-gray-200 { border-color: #d3d8e6; }
+  :where(html:not(.dark)) .bg-gray-100 { background-color: #e8ebf4; }
+}
+
 /* Blob (kept for admin/login backgrounds) */
 @keyframes blob {
   0%   { transform: translate(0px, 0px) scale(1); }
@@ -274,4 +292,9 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@media print {
+  html, body { background: #fff !important; }
+  @page { margin: 14mm; }
 }

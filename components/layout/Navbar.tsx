@@ -8,9 +8,11 @@ import { Menu, X, Code2, Search } from "lucide-react";
 import { OPEN_PALETTE_EVENT } from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS, SITE } from "@/lib/site";
+import { NAV_ITEMS } from "@/lib/site";
+import { useProfile } from "@/components/ProfileProvider";
 
 export function Navbar() {
+  const profile = useProfile();
   const [isScrolled,    setIsScrolled]    = useState(false);
   const [isMobileOpen,  setIsMobileOpen]  = useState(false);
   const [activeSection, setActiveSection] = useState("");
@@ -81,12 +83,12 @@ export function Navbar() {
             isScrolled ? "glass-strong max-w-4xl" : "glass-card max-w-5xl"
           )}
         >
-          <Link href="/" aria-label={`${SITE.name} — home`} className="group flex items-center gap-2.5 shrink-0">
+          <Link href="/" aria-label={`${profile.name} — home`} className="group flex items-center gap-2.5 shrink-0">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 shadow-lg shadow-brand-500/30 transition-transform duration-300 group-hover:scale-105">
               <Code2 className="h-5 w-5 text-white" />
             </span>
             <span className="hidden sm:block text-base font-bold tracking-tight">
-              <span className="gradient-text-static">{SITE.brand}</span>
+              <span className="gradient-text-static">{profile.brand}</span>
               <span className="text-gray-900 dark:text-white">.dev</span>
             </span>
           </Link>

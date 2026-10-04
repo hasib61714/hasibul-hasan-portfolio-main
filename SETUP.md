@@ -71,13 +71,36 @@ Find these values in Supabase dashboard → **Project Settings** → **API**.
 
 ---
 
-## 3b. Optional features
+## 3b. Managing content from the admin panel
 
-| Feature | How to enable |
+Run `supabase/schema.sql` again whenever you pull an update — it is idempotent and adds any new tables/columns.
+
+| Admin page | What you manage | Public result |
+|---|---|---|
+| **Site & Profile** | Name, job title, hero headline & intro, "My story", years of experience, **email, WhatsApp and all social links** (GitHub, LinkedIn, Facebook, X, YouTube, Instagram), location, time zone, open-to-work badge, booking link, tech strip & core stack, SEO description, footer text | Navbar, hero, About, Contact, footer, page titles, structured data |
+| **Experience** | Work & education timeline | "Experience" section, About cards, printable resume |
+| **Projects** | Details, case study (challenge / solution / highlights / role / year), screenshot, **gallery**, demo video | Project cards and `/projects/<slug>` |
+| **Skills / Certificates / Documents** | Skills with levels, certificates (image + PDF), CV & cover letter | Skills, Certificates and Resume sections |
+| **Services / Process / About cards** | The service cards, work-process steps and the three highlight cards | "Services", "Process" and About sections |
+| **Achievements / Testimonials / FAQ** | Awards & open-source work, client quotes, questions & answers | Matching sections (Achievements and Testimonials stay hidden while empty) |
+| **Blog** | Markdown posts, cover & inline images, tags, draft/publish | `/blog`, `/blog/<slug>`, RSS, "Writing" section |
+| **Messages / Hire requests** | Form submissions | — |
+| **Dashboard** | Visitor chart, profile photo | — |
+
+**Tip — editing the built-in content:** until you save your own version, sections show built-in default content. On the Experience, Skills, Projects, Certificates, Services, Process, About cards and FAQ pages, an **"Import current website content"** button copies those defaults into the database in one click so you can edit, reorder or delete each item.
+
+The built-in defaults live in `lib/profile-defaults.ts`, `lib/defaults.ts`, `lib/experience.ts` and `lib/fallback-data.ts`; once you save values in the admin panel they take priority.
+
+### Optional environment variables
+
+| Variable | Purpose |
 |---|---|
-| **Book a call** buttons | Set `NEXT_PUBLIC_BOOKING_URL` (Cal.com / Calendly link) in Vercel / `.env.local` |
-| **Testimonials** section | Add real quotes to `lib/testimonials.ts` — the section stays hidden while the list is empty |
-| **Case-study content** | Admin → Projects → edit a project and fill *challenge*, *solution*, *highlights*, *role*, *year* (re-run `supabase/schema.sql` once to add these columns) |
+| `RESEND_API_KEY` | Enables instant email alerts for new messages / hire requests ([resend.com](https://resend.com), free tier) |
+| `NOTIFY_EMAIL` | Where alerts are sent (defaults to the email in `lib/site.ts`) |
+| `NOTIFY_FROM` | Sender, e.g. `Portfolio <notify@yourdomain.com>` (defaults to Resend's sandbox sender, which can only email the account owner) |
+| `NEXT_PUBLIC_BOOKING_URL` | Fallback booking link; the Settings page value wins when set |
+
+Tip: to exclude your own visits from analytics, run `localStorage.setItem("no-track", "1")` once in your browser console.
 
 ---
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { contactSchema } from "@/lib/validation";
+import { notifyOwner } from "@/lib/notify";
 
 const HOUR = 60 * 60 * 1000;
 
@@ -60,6 +61,12 @@ export async function POST(request: NextRequest) {
       console.error("Supabase insert error:", error);
       return NextResponse.json({ error: "Failed to save message" }, { status: 500 });
     }
+
+    await notifyOwner({
+      subject: `New message from ${parsed.data.name}`,
+      replyTo: email,
+      text: `${parsed.data.name} <${email}>\n${parsed.data.subject ? `Subject: ${parsed.data.subject}\n` : ""}\n${parsed.data.message}\n\n— Sent via your portfolio contact form`,
+    });
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {

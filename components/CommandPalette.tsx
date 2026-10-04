@@ -10,9 +10,13 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/SocialIcons";
-import { NAV_ITEMS, SITE, whatsappUrl } from "@/lib/site";
+import { NAV_ITEMS } from "@/lib/site";
+import { useProfile } from "@/components/ProfileProvider";
+import { whatsappLink } from "@/lib/profile-defaults";
 import { mailtoHref, safeUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
+
+const NO_LINKS: { label: string; href: string }[] = [];
 
 export const OPEN_PALETTE_EVENT = "open-command-palette";
 
@@ -40,8 +44,17 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
   "#contact": Send,
 };
 
-export function CommandPalette({ projects, cvUrl }: { projects: PaletteProject[]; cvUrl?: string }) {
+export function CommandPalette({
+  projects,
+  cvUrl,
+  extraLinks = NO_LINKS,
+}: {
+  projects: PaletteProject[];
+  cvUrl?: string;
+  extraLinks?: { label: string; href: string }[];
+}) {
   const router = useRouter();
+  const profile = useProfile();
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -78,18 +91,25 @@ export function CommandPalette({ projects, cvUrl }: { projects: PaletteProject[]
       })),
     ];
     const cv = safeUrl(cvUrl);
-    if (SITE.bookingUrl) {
-      list.push({ id: "book", group: "Actions", label: "Book a call", icon: CalendarCheck, run: () => window.open(SITE.bookingUrl, "_blank", "noopener") });
+    const booking = safeUrl(profile.bookingUrl);
+    const whatsapp = whatsappLink(profile);
+    const github = safeUrl(profile.github);
+    const linkedin = safeUrl(profile.linkedin);
+    if (booking) {
+      list.push({ id: "book", group: "Actions", label: "Book a call", icon: CalendarCheck, run: () => window.open(booking, "_blank", "noopener") });
     }
+    extraLinks.forEach((l) =>
+      list.unshift({ id: `link-${l.href}`, group: "Navigate", label: l.label, icon: ArrowRight, run: () => router.push(l.href) })
+    );
     list.push(
-      { id: "email", group: "Actions", label: "Send an email", hint: SITE.email, icon: Mail, run: () => (window.location.href = mailtoHref(SITE.email)) },
+      { id: "email", group: "Actions", label: "Send an email", hint: profile.email, icon: Mail, run: () => (window.location.href = mailtoHref(profile.email)) },
       {
         id: "copy-email", group: "Actions", label: "Copy email address", icon: Copy,
-        run: () => navigator.clipboard.writeText(SITE.email).then(() => toast.success("Email copied"), () => toast.error("Couldn't copy")),
+        run: () => navigator.clipboard.writeText(profile.email).then(() => toast.success("Email copied"), () => toast.error("Couldn't copy")),
       },
-      { id: "whatsapp", group: "Actions", label: "Chat on WhatsApp", icon: MessageCircle, run: () => window.open(whatsappUrl(), "_blank", "noopener") },
-      { id: "github", group: "Actions", label: "Open GitHub", icon: GitHubIcon, run: () => window.open(SITE.github, "_blank", "noopener") },
-      { id: "linkedin", group: "Actions", label: "Open LinkedIn", icon: LinkedInIcon, run: () => window.open(SITE.linkedin, "_blank", "noopener") },
+      ...(whatsapp ? [{ id: "whatsapp", group: "Actions" as const, label: "Chat on WhatsApp", icon: MessageCircle, run: () => window.open(whatsapp, "_blank", "noopener") }] : []),
+      ...(github ? [{ id: "github", group: "Actions" as const, label: "Open GitHub", icon: GitHubIcon, run: () => window.open(github, "_blank", "noopener") }] : []),
+      ...(linkedin ? [{ id: "linkedin", group: "Actions" as const, label: "Open LinkedIn", icon: LinkedInIcon, run: () => window.open(linkedin, "_blank", "noopener") }] : []),
     );
     if (cv) list.push({ id: "cv", group: "Actions", label: "Download CV", icon: Download, run: () => window.open(cv, "_blank", "noopener") });
     list.push({
@@ -97,7 +117,7 @@ export function CommandPalette({ projects, cvUrl }: { projects: PaletteProject[]
       icon: resolvedTheme === "dark" ? Sun : Moon, run: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
     });
     return list;
-  }, [projects, cvUrl, goSection, router, resolvedTheme, setTheme]);
+  }, [projects, cvUrl, profile, extraLinks, goSection, router, resolvedTheme, setTheme]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

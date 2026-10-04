@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { hireSchema } from "@/lib/validation";
+import { notifyOwner } from "@/lib/notify";
 
 const HOUR = 60 * 60 * 1000;
 
@@ -60,6 +61,22 @@ export async function POST(request: NextRequest) {
       console.error("Supabase insert error:", error);
       return NextResponse.json({ error: "Failed to save hire request" }, { status: 500 });
     }
+
+    await notifyOwner({
+      subject: `New hire request: ${parsed.data.project_type} (${parsed.data.budget})`,
+      replyTo: email,
+      text: [
+        `${parsed.data.name} <${email}>`,
+        parsed.data.company ? `Company: ${parsed.data.company}` : "",
+        `Project type: ${parsed.data.project_type}`,
+        `Budget: ${parsed.data.budget}`,
+        parsed.data.timeline ? `Timeline: ${parsed.data.timeline}` : "",
+        "",
+        parsed.data.message,
+        "",
+        "— Sent via your portfolio hire form",
+      ].filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n"),
+    });
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
