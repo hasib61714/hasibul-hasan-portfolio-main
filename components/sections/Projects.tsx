@@ -109,7 +109,7 @@ export function Projects({ projects }: ProjectsProps) {
                     </span>
                     {project.featured && (
                       <span className="absolute right-3 top-3 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-bold text-brand-700 shadow-sm">
-                        ✦ Featured
+                        Featured
                       </span>
                     )}
                   </div>
