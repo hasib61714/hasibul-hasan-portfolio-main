@@ -17,6 +17,11 @@ import {
   X,
   Code2,
   ExternalLink,
+  PenLine,
+  Quote,
+  HelpCircle,
+  Trophy,
+  Settings,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -28,8 +33,13 @@ const NAV_ITEMS = [
   { label: "Skills",        href: "/admin/skills",        icon: Wrench,          badgeKey: null        },
   { label: "Certificates",  href: "/admin/certificates",  icon: Award,           badgeKey: null        },
   { label: "Documents",     href: "/admin/documents",     icon: FileText,        badgeKey: null        },
+  { label: "Blog",          href: "/admin/posts",         icon: PenLine,         badgeKey: null        },
+  { label: "Achievements",  href: "/admin/achievements",  icon: Trophy,          badgeKey: null        },
+  { label: "Testimonials",  href: "/admin/testimonials",  icon: Quote,           badgeKey: null        },
+  { label: "FAQ",           href: "/admin/faqs",          icon: HelpCircle,      badgeKey: null        },
   { label: "Messages",      href: "/admin/messages",      icon: MessageSquare,   badgeKey: "messages"  },
   { label: "Hire Requests", href: "/admin/hire-requests", icon: Briefcase,       badgeKey: "hires"     },
+  { label: "Settings",      href: "/admin/settings",      icon: Settings,        badgeKey: null        },
 ];
 
 export function AdminSidebar() {

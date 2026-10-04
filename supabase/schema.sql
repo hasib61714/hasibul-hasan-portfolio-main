@@ -34,6 +34,8 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS solution   TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS highlights TEXT[] NOT NULL DEFAULT '{}';
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS role       TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS year       TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS video_url  TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS gallery    TEXT[] NOT NULL DEFAULT '{}';
 
 -- ─────────────────────────────────────────────
 -- 2. SKILLS
@@ -140,6 +142,73 @@ SELECT id FROM auth.users WHERE lower(email) = lower('mh.hasan14200@gmail.com')
 ON CONFLICT DO NOTHING;
 
 -- ─────────────────────────────────────────────
+-- 8. TESTIMONIALS, FAQS, ACHIEVEMENTS, BLOG POSTS, SETTINGS, PAGE VIEWS
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS testimonials (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  quote       TEXT NOT NULL,
+  name        TEXT NOT NULL,
+  role        TEXT NOT NULL,
+  company     TEXT,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS faqs (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  question    TEXT NOT NULL,
+  answer      TEXT NOT NULL,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS achievements (
+  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title        TEXT NOT NULL,
+  organization TEXT,
+  kind         TEXT NOT NULL DEFAULT 'award'
+               CHECK (kind IN ('award', 'open-source', 'talk', 'publication', 'other')),
+  achieved_on  DATE,
+  description  TEXT,
+  url          TEXT,
+  order_index  INTEGER NOT NULL DEFAULT 0,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  slug         TEXT NOT NULL UNIQUE,
+  title        TEXT NOT NULL,
+  excerpt      TEXT,
+  content      TEXT NOT NULL DEFAULT '',
+  cover_url    TEXT,
+  tags         TEXT[] NOT NULL DEFAULT '{}',
+  published    BOOLEAN NOT NULL DEFAULT false,
+  published_at TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Single-row site settings (id is always 1)
+CREATE TABLE IF NOT EXISTS site_settings (
+  id                INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  booking_url       TEXT,
+  open_to_work      BOOLEAN NOT NULL DEFAULT true,
+  availability_text TEXT,
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO site_settings (id) VALUES (1) ON CONFLICT DO NOTHING;
+
+-- Privacy-friendly page-view log (path + referrer host only; no IPs, no cookies)
+CREATE TABLE IF NOT EXISTS page_views (
+  id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  path       TEXT NOT NULL,
+  referrer   TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS page_views_created_idx ON page_views (created_at);
+
+-- ─────────────────────────────────────────────
 -- Auto-update updated_at via trigger
 -- ─────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -152,6 +221,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS update_projects_updated_at  ON projects;
 DROP TRIGGER IF EXISTS update_documents_updated_at ON documents;
+DROP TRIGGER IF EXISTS update_posts_updated_at     ON posts;
+DROP TRIGGER IF EXISTS update_settings_updated_at  ON site_settings;
 
 CREATE TRIGGER update_projects_updated_at
   BEFORE UPDATE ON projects
@@ -159,6 +230,14 @@ CREATE TRIGGER update_projects_updated_at
 
 CREATE TRIGGER update_documents_updated_at
   BEFORE UPDATE ON documents
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_posts_updated_at
+  BEFORE UPDATE ON posts
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_settings_updated_at
+  BEFORE UPDATE ON site_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ─────────────────────────────────────────────
@@ -176,6 +255,28 @@ ALTER TABLE certificates  ADD  CONSTRAINT certificates_urls_http CHECK (
   (credential_url IS NULL OR credential_url ~* '^https?://[^[:space:]]+$') AND
   (image_url      IS NULL OR image_url      ~* '^https?://[^[:space:]]+$') AND
   (file_url       IS NULL OR file_url       ~* '^https?://[^[:space:]]+$')
+) NOT VALID;
+
+ALTER TABLE projects      DROP CONSTRAINT IF EXISTS projects_video_http;
+ALTER TABLE projects      ADD  CONSTRAINT projects_video_http CHECK (
+  video_url IS NULL OR video_url ~* '^https://[^[:space:]]+$'
+) NOT VALID;
+
+ALTER TABLE achievements  DROP CONSTRAINT IF EXISTS achievements_url_http;
+ALTER TABLE achievements  ADD  CONSTRAINT achievements_url_http CHECK (
+  url IS NULL OR url ~* '^https?://[^[:space:]]+$'
+) NOT VALID;
+
+ALTER TABLE posts         DROP CONSTRAINT IF EXISTS posts_slug_format;
+ALTER TABLE posts         ADD  CONSTRAINT posts_slug_format CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$') NOT VALID;
+ALTER TABLE posts         DROP CONSTRAINT IF EXISTS posts_cover_http;
+ALTER TABLE posts         ADD  CONSTRAINT posts_cover_http CHECK (
+  cover_url IS NULL OR cover_url ~* '^https?://[^[:space:]]+$'
+) NOT VALID;
+
+ALTER TABLE site_settings DROP CONSTRAINT IF EXISTS site_settings_booking_http;
+ALTER TABLE site_settings ADD  CONSTRAINT site_settings_booking_http CHECK (
+  booking_url IS NULL OR booking_url ~* '^https://[^[:space:]]+$'
 ) NOT VALID;
 
 ALTER TABLE documents     DROP CONSTRAINT IF EXISTS documents_url_http;
@@ -206,6 +307,12 @@ ALTER TABLE certificates  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contacts      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hire_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE testimonials  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE faqs          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE achievements  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE posts         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE page_views    ENABLE ROW LEVEL SECURITY;
 
 -- Remove every policy from earlier versions of this schema
 DROP POLICY IF EXISTS "Public can read projects"     ON projects;
@@ -220,12 +327,28 @@ DROP POLICY IF EXISTS "Admin full access certificates" ON certificates;
 DROP POLICY IF EXISTS "Admin full access documents"    ON documents;
 DROP POLICY IF EXISTS "Admin full access contacts"     ON contacts;
 DROP POLICY IF EXISTS "Admin full access hire"         ON hire_requests;
+DROP POLICY IF EXISTS "Public can read testimonials"   ON testimonials;
+DROP POLICY IF EXISTS "Public can read faqs"           ON faqs;
+DROP POLICY IF EXISTS "Public can read achievements"   ON achievements;
+DROP POLICY IF EXISTS "Public can read published posts" ON posts;
+DROP POLICY IF EXISTS "Public can read settings"       ON site_settings;
+DROP POLICY IF EXISTS "Admin full access testimonials" ON testimonials;
+DROP POLICY IF EXISTS "Admin full access faqs"         ON faqs;
+DROP POLICY IF EXISTS "Admin full access achievements" ON achievements;
+DROP POLICY IF EXISTS "Admin full access posts"        ON posts;
+DROP POLICY IF EXISTS "Admin full access settings"     ON site_settings;
+DROP POLICY IF EXISTS "Admin full access page views"   ON page_views;
 
 -- Public read access to portfolio content
 CREATE POLICY "Public can read projects"     ON projects     FOR SELECT USING (true);
 CREATE POLICY "Public can read skills"       ON skills       FOR SELECT USING (true);
 CREATE POLICY "Public can read certificates" ON certificates FOR SELECT USING (true);
 CREATE POLICY "Public can read active docs"  ON documents    FOR SELECT USING (is_active = true);
+CREATE POLICY "Public can read testimonials"   ON testimonials  FOR SELECT USING (true);
+CREATE POLICY "Public can read faqs"           ON faqs          FOR SELECT USING (true);
+CREATE POLICY "Public can read achievements"   ON achievements  FOR SELECT USING (true);
+CREATE POLICY "Public can read published posts" ON posts        FOR SELECT USING (published = true);
+CREATE POLICY "Public can read settings"       ON site_settings FOR SELECT USING (true);
 
 -- Contact / hire submissions go through the server API routes (service role, with
 -- validation + rate limiting). There is intentionally NO public INSERT policy, so
@@ -238,6 +361,13 @@ CREATE POLICY "Admin full access certificates" ON certificates  FOR ALL USING (p
 CREATE POLICY "Admin full access documents"    ON documents     FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 CREATE POLICY "Admin full access contacts"     ON contacts      FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 CREATE POLICY "Admin full access hire"         ON hire_requests FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access testimonials" ON testimonials  FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access faqs"         ON faqs          FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access achievements" ON achievements  FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access posts"        ON posts         FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Admin full access settings"     ON site_settings FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+-- page_views: rows are written by the server (service role); only admins can read them.
+CREATE POLICY "Admin full access page views"   ON page_views    FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- ─────────────────────────────────────────────
 -- Storage buckets (public read, admin-only write, size + MIME limits)
@@ -246,7 +376,8 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
   ('documents',    'documents',    true, 10485760, ARRAY['application/pdf']),
   ('certificates', 'certificates', true, 10485760, ARRAY['application/pdf','image/jpeg','image/png','image/webp']),
   ('projects',     'projects',     true,  5242880, ARRAY['image/jpeg','image/png','image/webp']),
-  ('profile',      'profile',      true,  5242880, ARRAY['image/jpeg','image/png','image/webp'])
+  ('profile',      'profile',      true,  5242880, ARRAY['image/jpeg','image/png','image/webp']),
+  ('blog',         'blog',         true,  5242880, ARRAY['image/jpeg','image/png','image/webp'])
 ON CONFLICT (id) DO UPDATE SET
   public             = EXCLUDED.public,
   file_size_limit    = EXCLUDED.file_size_limit,
@@ -266,21 +397,21 @@ DROP POLICY IF EXISTS "Admin can update portfolio files" ON storage.objects;
 DROP POLICY IF EXISTS "Admin can delete portfolio files" ON storage.objects;
 
 CREATE POLICY "Portfolio files are public" ON storage.objects
-  FOR SELECT USING (bucket_id IN ('documents','certificates','projects','profile'));
+  FOR SELECT USING (bucket_id IN ('documents','certificates','projects','profile','blog'));
 
 CREATE POLICY "Admin can upload portfolio files" ON storage.objects
   FOR INSERT WITH CHECK (
-    bucket_id IN ('documents','certificates','projects','profile') AND public.is_admin()
+    bucket_id IN ('documents','certificates','projects','profile','blog') AND public.is_admin()
   );
 
 CREATE POLICY "Admin can update portfolio files" ON storage.objects
   FOR UPDATE USING (
-    bucket_id IN ('documents','certificates','projects','profile') AND public.is_admin()
+    bucket_id IN ('documents','certificates','projects','profile','blog') AND public.is_admin()
   );
 
 CREATE POLICY "Admin can delete portfolio files" ON storage.objects
   FOR DELETE USING (
-    bucket_id IN ('documents','certificates','projects','profile') AND public.is_admin()
+    bucket_id IN ('documents','certificates','projects','profile','blog') AND public.is_admin()
   );
 
 -- ─────────────────────────────────────────────

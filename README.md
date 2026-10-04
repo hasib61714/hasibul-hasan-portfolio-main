@@ -35,6 +35,13 @@ A modern, full-stack personal portfolio built with **Next.js 15**, **TypeScript*
 - **Hire Me / Contact** — Validated, rate-limited, spam-protected forms
 - **Admin Panel** — Full CRUD for all sections, restricted to registered admins
 - **Global-ready** — USD budgets, timezone/availability info, SEO (Open Graph image, sitemap, robots, JSON-LD), light/dark theme, reduced-motion & keyboard accessible
+- **Services, Process & FAQ** — what you offer, how you work, and common questions (FAQ is editable from the admin panel and exposed to search engines as structured data)
+- **Blog** — write posts in Markdown from the admin panel (cover + inline image upload, drafts, tags, RSS feed at `/blog/rss.xml`)
+- **Achievements & Testimonials** — add awards, open-source work, talks and client quotes in the admin panel; each section appears automatically once it has content
+- **Printable resume** — `/resume` is generated from your site data and prints to a clean A4 PDF
+- **Site settings** — toggle the "open to work" badge, edit its text and add a booking link (Cal.com / Calendly) without redeploying
+- **Visitor analytics** — privacy-friendly page-view chart, top pages and referrers on the admin dashboard (no cookies, no IPs)
+- **Email alerts** — optional instant email when someone uses the contact or hire form (Resend)
 - **Case studies** — every project gets its own page at `/projects/[slug]` (challenge, solution, highlights, tech stack, browser mockup) editable from the admin panel
 - **Command palette** — press `Ctrl/⌘ + K` to jump to sections, projects and quick actions (email, WhatsApp, CV, theme)
 - **Motion & depth** — word-reveal headline, cursor-follow card spotlight, magnetic CTA, count-up stats, serif accent typography, film-grain texture (all respect reduced-motion)

@@ -23,7 +23,7 @@ const CONTACT_INFO = [
   { icon: MapPin,        label: "Location", value: `${SITE.location} (${SITE.timezone})`, href: undefined,           color: "from-accent-500 to-accent-600" },
 ];
 
-export function Contact() {
+export function Contact({ bookingUrl }: { bookingUrl?: string }) {
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -121,9 +121,9 @@ export function Contact() {
               })}
             </ul>
 
-            {SITE.bookingUrl && (
+            {bookingUrl && (
               <a
-                href={SITE.bookingUrl}
+                href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"

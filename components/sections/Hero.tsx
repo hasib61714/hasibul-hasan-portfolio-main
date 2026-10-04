@@ -14,6 +14,9 @@ import { mailtoHref, safeUrl } from "@/lib/utils";
 interface HeroProps {
   avatarUrl: string | null;
   cvUrl?: string;
+  bookingUrl?: string;
+  openToWork?: boolean;
+  availabilityText?: string | null;
   projectCount: number;
   certificateCount: number;
 }
@@ -38,7 +41,7 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
 });
 
-export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroProps) {
+export function Hero({ avatarUrl, cvUrl, bookingUrl, openToWork = true, availabilityText, projectCount, certificateCount }: HeroProps) {
   const cvHref = safeUrl(cvUrl);
   const portraitRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: portraitRef, offset: ["start end", "end start"] });
@@ -59,13 +62,20 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
           {/* ── Copy ── */}
           <div className="space-y-7">
             <motion.div {...fadeUp(0)}>
-              <span className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              {openToWork ? (
+                <span className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  {availabilityText || SITE.availability}
                 </span>
-                {SITE.availability}
-              </span>
+              ) : (
+                <span className="inline-flex items-center gap-2.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300">
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  {availabilityText || "Currently booked — open to future projects"}
+                </span>
+              )}
             </motion.div>
 
             <motion.div {...fadeUp(0.08)} className="space-y-4">
@@ -105,9 +115,9 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
               </Magnetic>
-              {SITE.bookingUrl && (
+              {bookingUrl && (
                 <a
-                  href={SITE.bookingUrl}
+                  href={bookingUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3.5 text-base font-semibold text-emerald-700 transition-all hover:-translate-y-0.5 dark:text-emerald-300"

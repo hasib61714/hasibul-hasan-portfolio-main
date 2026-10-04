@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, CheckCircle2, Lightbulb, Target } 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BrowserMockup } from "@/components/ui/BrowserMockup";
+import { Gallery } from "@/components/ui/Gallery";
+import { videoEmbedUrl } from "@/lib/video";
 import { GitHubIcon } from "@/components/ui/SocialIcons";
 import { CommandPalette } from "@/components/CommandPalette";
 import { SpotlightProvider } from "@/components/ui/SpotlightProvider";
@@ -57,6 +59,8 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
   const code = safeUrl(project.github_url);
   const image = safeUrl(project.image_url);
   const highlights = project.highlights?.filter(Boolean) ?? [];
+  const video = videoEmbedUrl(project.video_url);
+  const gallery = (project.gallery ?? []).map((g) => safeUrl(g)).filter((g): g is string => !!g);
   const next = data.projects[(index + 1) % data.projects.length];
   const cv = data.documents.find((d) => d.type === "cv");
 
@@ -127,6 +131,22 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
 
           <div className="grid gap-12 lg:grid-cols-[1fr_20rem]">
             <div className="space-y-12">
+              {video && (
+                <section>
+                  <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Demo</h2>
+                  <div className="aspect-video overflow-hidden rounded-2xl border border-gray-200 bg-black dark:border-white/10">
+                    <iframe
+                      src={video}
+                      title={`${project.title} demo video`}
+                      loading="lazy"
+                      allow="fullscreen; picture-in-picture"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      className="h-full w-full"
+                    />
+                  </div>
+                </section>
+              )}
+
               {project.long_description && (
                 <section>
                   <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Overview</h2>
@@ -151,6 +171,13 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
                     The solution
                   </h2>
                   <p className="leading-relaxed text-gray-700 dark:text-gray-300">{project.solution}</p>
+                </section>
+              )}
+
+              {gallery.length > 0 && (
+                <section>
+                  <h2 className="mb-5 text-2xl font-bold text-gray-900 dark:text-white">Screenshots</h2>
+                  <Gallery images={gallery} title={project.title} />
                 </section>
               )}
 

@@ -16,15 +16,59 @@ export interface Project {
   highlights?: string[] | null;
   role?: string | null;
   year?: string | null;
+  video_url?: string | null;
+  gallery?: string[] | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface Testimonial {
+  id?: string;
   quote: string;
   name: string;
   role: string;
-  company?: string;
+  company?: string | null;
+  order_index?: number;
+}
+
+export interface Faq {
+  id: string;
+  question: string;
+  answer: string;
+  order_index: number;
+}
+
+export type AchievementKind = "award" | "open-source" | "talk" | "publication" | "other";
+
+export interface Achievement {
+  id: string;
+  title: string;
+  organization?: string | null;
+  kind: AchievementKind;
+  achieved_on?: string | null;
+  description?: string | null;
+  url?: string | null;
+  order_index: number;
+}
+
+export interface Post {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string | null;
+  content: string;
+  cover_url?: string | null;
+  tags: string[];
+  published: boolean;
+  published_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SiteSettings {
+  booking_url?: string | null;
+  open_to_work: boolean;
+  availability_text?: string | null;
 }
 
 export interface Skill {

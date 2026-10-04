@@ -71,13 +71,33 @@ Find these values in Supabase dashboard → **Project Settings** → **API**.
 
 ---
 
-## 3b. Optional features
+## 3b. Managing content from the admin panel
 
-| Feature | How to enable |
+Run `supabase/schema.sql` again whenever you pull an update — it is idempotent and adds any new tables/columns.
+
+| Admin page | What you manage | Public result |
+|---|---|---|
+| **Projects** | Details, case study (challenge / solution / highlights / role / year), cover screenshot, **gallery**, demo video link | Project cards and `/projects/<slug>` |
+| **Blog** | Markdown posts, cover & inline images, tags, draft/publish | `/blog`, `/blog/<slug>`, RSS, "Writing" section |
+| **Achievements** | Awards, open-source, talks, publications | "Achievements" section (hidden while empty) |
+| **Testimonials** | Client / colleague quotes | "Testimonials" section (hidden while empty) |
+| **FAQ** | Questions & answers | "FAQ" section (a default set is shown until you add your own) |
+| **Certificates / Documents / Skills** | As before | Certificates, CV, Skills |
+| **Settings** | "Open to work" badge + text, booking link | Hero badge, "Book a call" buttons |
+| **Dashboard** | Visitor chart, messages, hire requests, profile photo | — |
+
+Services and the 4-step process are plain content in `lib/defaults.ts`; work/education history is in `lib/experience.ts`.
+
+### Optional environment variables
+
+| Variable | Purpose |
 |---|---|
-| **Book a call** buttons | Set `NEXT_PUBLIC_BOOKING_URL` (Cal.com / Calendly link) in Vercel / `.env.local` |
-| **Testimonials** section | Add real quotes to `lib/testimonials.ts` — the section stays hidden while the list is empty |
-| **Case-study content** | Admin → Projects → edit a project and fill *challenge*, *solution*, *highlights*, *role*, *year* (re-run `supabase/schema.sql` once to add these columns) |
+| `RESEND_API_KEY` | Enables instant email alerts for new messages / hire requests ([resend.com](https://resend.com), free tier) |
+| `NOTIFY_EMAIL` | Where alerts are sent (defaults to the email in `lib/site.ts`) |
+| `NOTIFY_FROM` | Sender, e.g. `Portfolio <notify@yourdomain.com>` (defaults to Resend's sandbox sender, which can only email the account owner) |
+| `NEXT_PUBLIC_BOOKING_URL` | Fallback booking link; the Settings page value wins when set |
+
+Tip: to exclude your own visits from analytics, run `localStorage.setItem("no-track", "1")` once in your browser console.
 
 ---
 

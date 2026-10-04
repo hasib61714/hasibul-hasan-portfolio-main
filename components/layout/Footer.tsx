@@ -76,9 +76,9 @@ export function Footer() {
           <nav aria-label="Footer" className="md:col-span-3">
             <h3 className="mb-5 text-xs font-bold uppercase tracking-widest text-gray-500">Navigation</h3>
             <ul className="space-y-3">
-              {NAV_ITEMS.map(({ label, href }) => (
+              {[...NAV_ITEMS.map(({ label, href }) => ({ label, href: `/${href}` })), { label: "Blog", href: "/blog" }, { label: "Printable resume", href: "/resume" }].map(({ label, href }) => (
                 <li key={href}>
-                  <a href={`/${href}`} className="group flex w-fit items-center gap-1.5 text-sm transition-colors hover:text-brand-300">
+                  <a href={href} className="group flex w-fit items-center gap-1.5 text-sm transition-colors hover:text-brand-300">
                     <span className="h-px w-0 rounded-full bg-brand-400 transition-all duration-200 group-hover:w-3" />
                     {label}
                   </a>

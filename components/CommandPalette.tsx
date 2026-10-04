@@ -14,6 +14,8 @@ import { NAV_ITEMS, SITE, whatsappUrl } from "@/lib/site";
 import { mailtoHref, safeUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 
+const NO_LINKS: { label: string; href: string }[] = [];
+
 export const OPEN_PALETTE_EVENT = "open-command-palette";
 
 interface PaletteProject {
@@ -40,7 +42,17 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
   "#contact": Send,
 };
 
-export function CommandPalette({ projects, cvUrl }: { projects: PaletteProject[]; cvUrl?: string }) {
+export function CommandPalette({
+  projects,
+  cvUrl,
+  bookingUrl,
+  extraLinks = NO_LINKS,
+}: {
+  projects: PaletteProject[];
+  cvUrl?: string;
+  bookingUrl?: string;
+  extraLinks?: { label: string; href: string }[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
@@ -78,9 +90,13 @@ export function CommandPalette({ projects, cvUrl }: { projects: PaletteProject[]
       })),
     ];
     const cv = safeUrl(cvUrl);
-    if (SITE.bookingUrl) {
-      list.push({ id: "book", group: "Actions", label: "Book a call", icon: CalendarCheck, run: () => window.open(SITE.bookingUrl, "_blank", "noopener") });
+    const booking = safeUrl(bookingUrl);
+    if (booking) {
+      list.push({ id: "book", group: "Actions", label: "Book a call", icon: CalendarCheck, run: () => window.open(booking, "_blank", "noopener") });
     }
+    extraLinks.forEach((l) =>
+      list.unshift({ id: `link-${l.href}`, group: "Navigate", label: l.label, icon: ArrowRight, run: () => router.push(l.href) })
+    );
     list.push(
       { id: "email", group: "Actions", label: "Send an email", hint: SITE.email, icon: Mail, run: () => (window.location.href = mailtoHref(SITE.email)) },
       {
@@ -97,7 +113,7 @@ export function CommandPalette({ projects, cvUrl }: { projects: PaletteProject[]
       icon: resolvedTheme === "dark" ? Sun : Moon, run: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
     });
     return list;
-  }, [projects, cvUrl, goSection, router, resolvedTheme, setTheme]);
+  }, [projects, cvUrl, bookingUrl, extraLinks, goSection, router, resolvedTheme, setTheme]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

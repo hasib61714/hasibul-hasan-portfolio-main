@@ -27,6 +27,7 @@ const projectSchema = z.object({
   highlights:       z.string().optional(),
   role:             z.string().optional(),
   year:             z.string().optional(),
+  video_url:        z.string().trim().refine((v) => v === "" || /^https:\/\/\S+$/i.test(v), "Must be a valid https:// link").optional(),
   tech_stack:       z.string().min(1, "Add at least one technology"),
   category:         z.string().min(1, "Category is required"),
   image_url:        optionalHttpUrl,
@@ -45,6 +46,8 @@ export default function AdminProjectsPage() {
   const [editing,   setEditing]   = useState<Project | null>(null);
   const [deleting,  setDeleting]  = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<string[]>([]);
+  const [galleryBusy, setGalleryBusy] = useState(false);
 
   const {
     register,
@@ -74,6 +77,7 @@ export default function AdminProjectsPage() {
 
   const openEdit = (project: Project) => {
     setEditing(project);
+    setGallery(project.gallery ?? []);
     reset({
       title:            project.title,
       description:      project.description,
@@ -83,6 +87,7 @@ export default function AdminProjectsPage() {
       highlights:       (project.highlights ?? []).join("\n"),
       role:             project.role ?? "",
       year:             project.year ?? "",
+      video_url:        project.video_url ?? "",
       tech_stack:       project.tech_stack.join(", "),
       category:         project.category,
       image_url:        project.image_url ?? "",
@@ -115,6 +120,41 @@ export default function AdminProjectsPage() {
     fetchProjects();
   };
 
+  const saveGallery = async (projectId: string, next: string[]) => {
+    const { error } = await createClient().from("projects").update({ gallery: next }).eq("id", projectId);
+    if (error) { toast.error("Failed to save gallery: " + error.message); return false; }
+    setGallery(next);
+    fetchProjects();
+    return true;
+  };
+
+  const addGalleryImages = async (files: FileList | null) => {
+    if (!editing || !files || files.length === 0) return;
+    setGalleryBusy(true);
+    const supabase = createClient();
+    const added: string[] = [];
+    for (const file of Array.from(files)) {
+      const problem = await validateUpload(file, "image");
+      if (problem) { toast.error(`${file.name}: ${problem}`); continue; }
+      const path = buildStoragePath(`${editing.id}/gallery`, file);
+      const { error } = await supabase.storage.from("projects").upload(path, file, { contentType: file.type });
+      if (error) { toast.error(`${file.name}: upload failed`); continue; }
+      added.push(supabase.storage.from("projects").getPublicUrl(path).data.publicUrl);
+    }
+    if (added.length) {
+      if (await saveGallery(editing.id, [...gallery, ...added])) toast.success(`${added.length} image${added.length > 1 ? "s" : ""} added`);
+    }
+    setGalleryBusy(false);
+  };
+
+  const removeGalleryImage = async (url: string) => {
+    if (!editing || !confirm("Remove this image from the gallery?")) return;
+    if (await saveGallery(editing.id, gallery.filter((g) => g !== url))) {
+      const path = storagePathFromUrl(url, "projects");
+      if (path) await createClient().storage.from("projects").remove([path]);
+    }
+  };
+
   const onSubmit = async (data: ProjectFormData) => {
     const supabase = createClient();
     const payload = {
@@ -124,6 +164,7 @@ export default function AdminProjectsPage() {
       solution:   data.solution?.trim() || null,
       role:       data.role?.trim()     || null,
       year:       data.year?.trim()     || null,
+      video_url:  data.video_url?.trim() || null,
       highlights: (data.highlights ?? "").split("\n").map((h) => h.trim()).filter(Boolean),
       image_url:  data.image_url?.trim()  || null,
       live_url:   data.live_url?.trim()   || null,
@@ -271,6 +312,33 @@ export default function AdminProjectsPage() {
             <Input label="Live URL" type="url" placeholder="https://..." error={errors.live_url?.message} {...register("live_url")} />
             <Input label="GitHub URL" type="url" placeholder="https://github.com/..." error={errors.github_url?.message} {...register("github_url")} />
           </div>
+          <Input label="Demo video (YouTube, Vimeo or Loom link)" type="url" placeholder="https://www.youtube.com/watch?v=…" error={errors.video_url?.message} {...register("video_url")} />
+
+          {editing ? (
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">Screenshot gallery</p>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {gallery.map((url) => (
+                  <div key={url} className="group relative aspect-video overflow-hidden rounded-lg border border-gray-200 dark:border-white/10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="h-full w-full object-cover" />
+                    <button type="button" onClick={() => removeGalleryImage(url)} aria-label="Remove image" className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+                <label className="grid aspect-video cursor-pointer place-items-center rounded-lg border border-dashed border-gray-300 text-xs text-gray-500 hover:border-brand-400 dark:border-white/20">
+                  <span className="flex flex-col items-center gap-1"><Upload className="h-4 w-4" />{galleryBusy ? "Uploading…" : "Add images"}</span>
+                  <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" disabled={galleryBusy}
+                    onChange={(e) => { const f = e.target.files; addGalleryImages(f).finally(() => { e.target.value = ""; }); }} />
+                </label>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Shown on the project&apos;s case-study page. JPG/PNG/WebP up to 5 MB each.</p>
+            </div>
+          ) : (
+            <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:bg-white/[0.04]">Save the project first, then edit it to add a screenshot gallery.</p>
+          )}
+
           <label className="flex items-center gap-3 cursor-pointer">
             <input type="checkbox" className="w-4 h-4 rounded text-brand-500 accent-brand-500" {...register("featured")} />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Mark as Featured</span>

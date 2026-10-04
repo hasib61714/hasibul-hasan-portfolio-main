@@ -1,6 +1,7 @@
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatsCard } from "@/components/admin/StatsCard";
 import { ProfileUpload } from "@/components/admin/ProfileUpload";
+import { AnalyticsCard, type ViewRow } from "@/components/admin/AnalyticsCard";
 import { createClient } from "@/lib/supabase/server";
 import { FolderKanban, Wrench, Award, MessageSquare, Briefcase, FileText, Plus, ArrowRight } from "lucide-react";
 import { formatDate } from "@/lib/utils";
@@ -12,13 +13,15 @@ export const metadata: Metadata = { title: "Dashboard" };
 async function getDashboardStats() {
   const supabase = await createClient();
 
-  const [projects, skills, certs, messages, hireReqs, docs] = await Promise.all([
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const [projects, skills, certs, messages, hireReqs, docs, views] = await Promise.all([
     supabase.from("projects").select("id", { count: "exact", head: true }),
     supabase.from("skills").select("id", { count: "exact", head: true }),
     supabase.from("certificates").select("id", { count: "exact", head: true }),
     supabase.from("contacts").select("id, is_read, name, email, created_at").order("created_at", { ascending: false }).limit(5),
     supabase.from("hire_requests").select("id, status, name, project_type, created_at").order("created_at", { ascending: false }).limit(5),
     supabase.from("documents").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("page_views").select("path, referrer, created_at").gte("created_at", since).order("created_at", { ascending: false }).limit(20000),
   ]);
 
   return {
@@ -28,6 +31,8 @@ async function getDashboardStats() {
     docCount:      docs.count      ?? 0,
     recentMessages: messages.data  ?? [],
     recentHires:   hireReqs.data   ?? [],
+    views:          (views.data ?? []) as ViewRow[],
+    viewsUnavailable: !!views.error,
     unreadMessages: (messages.data ?? []).filter((m: { is_read: boolean }) => !m.is_read).length,
   };
 }
@@ -70,6 +75,8 @@ export default async function AdminDashboard() {
             <StatsCard key={card.title} {...card} />
           ))}
         </div>
+
+        <AnalyticsCard rows={stats.views} unavailable={stats.viewsUnavailable} />
 
         <ProfileUpload />
 
