@@ -16,7 +16,7 @@ export function Process({ items }: { items: ContentBlock[] }) {
         />
 
         <ol className="relative grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div aria-hidden className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-transparent via-brand-500/40 to-transparent md:block" />
+          <div aria-hidden className="absolute left-0 right-0 top-6 hidden h-px bg-brand-500/30 md:block" />
           {items.map((step, i) => (
             <motion.li
               key={step.title}
@@ -26,7 +26,7 @@ export function Process({ items }: { items: ContentBlock[] }) {
               transition={{ delay: i * 0.1, duration: 0.5 }}
               className="relative"
             >
-              <span className="relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-accent-500 font-mono text-sm font-bold text-white shadow-lg shadow-brand-600/30 ring-4 ring-gray-50 dark:ring-gray-900">
+              <span className="relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-600 font-mono text-sm font-bold text-white ring-4 ring-gray-50 dark:ring-gray-900">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">{step.title}</h3>

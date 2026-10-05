@@ -10,7 +10,7 @@ interface BrowserMockupProps {
 }
 
 /** Browser-window frame used on case-study pages. Falls back to a generated cover when there's no screenshot. */
-export function BrowserMockup({ title, image, url, className, gradient = "from-brand-600 to-accent-500" }: BrowserMockupProps) {
+export function BrowserMockup({ title, image, url, className }: BrowserMockupProps) {
   let host = "";
   try {
     host = url ? new URL(url).host : "";
@@ -18,7 +18,7 @@ export function BrowserMockup({ title, image, url, className, gradient = "from-b
     host = "";
   }
   return (
-    <figure className={cn("overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-brand-600/10 dark:border-white/10 dark:bg-gray-900", className)}>
+    <figure className={cn("overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900", className)}>
       <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.03]">
         <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
@@ -27,7 +27,7 @@ export function BrowserMockup({ title, image, url, className, gradient = "from-b
           {host || title}
         </span>
       </div>
-      <div className={`relative aspect-[16/10] bg-gradient-to-br ${gradient}`}>
+      <div className={`relative aspect-[16/10] bg-brand-600`}>
         {image ? (
           <Image src={image} alt={`${title} screenshot`} fill priority sizes="(min-width: 1024px) 960px, 100vw" className="object-cover object-top" />
         ) : (

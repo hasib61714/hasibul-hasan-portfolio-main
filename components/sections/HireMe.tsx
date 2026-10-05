@@ -92,7 +92,7 @@ export function HireMe() {
           <ul className="space-y-4 lg:pt-2">
             {PERKS.map(({ icon: Icon, title, desc }) => (
               <li key={title} className="card-premium flex gap-4 rounded-2xl p-5">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-md">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-md">
                   <Icon className="h-5 w-5" />
                 </span>
                 <div>

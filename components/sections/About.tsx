@@ -27,15 +27,6 @@ const PILLAR_ICONS: Record<string, LucideIcon> = {
   cloud: Cloud, palette: Palette,
 };
 
-const PILLAR_GRADIENTS = [
-  "from-brand-500 to-cyan-500",
-  "from-emerald-500 to-teal-500",
-  "from-accent-500 to-pink-500",
-  "from-amber-500 to-orange-500",
-  "from-brand-600 to-accent-500",
-  "from-cyan-500 to-brand-500",
-];
-
 const item = {
   hidden: { opacity: 0, y: 24 },
   show: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.5, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] as const } }),
@@ -87,7 +78,6 @@ export function About({ projectCount, certificateCount, github, pillars, experie
 
   return (
     <section id="about" className="section-padding relative overflow-hidden bg-gray-50/70 dark:bg-gray-900/40">
-      <div aria-hidden className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-brand-500/5 blur-3xl" />
       <div className="container-max">
         <SectionHeader
           badge="About"
@@ -123,7 +113,7 @@ export function About({ projectCount, certificateCount, github, pillars, experie
           {currentJob && (
             <motion.article {...cardProps(1)} className="card-premium rounded-3xl p-6 md:col-span-5">
               <div className="mb-3 flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 text-white shadow-md">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white shadow-md">
                   <Briefcase className="h-5 w-5" />
                 </span>
                 <p className="eyebrow !tracking-[0.14em]">{currentJob.current ? "Currently" : "Latest role"}</p>
@@ -142,7 +132,7 @@ export function About({ projectCount, certificateCount, github, pillars, experie
           {education && (
             <motion.article {...cardProps(2)} className="card-premium rounded-3xl p-6 md:col-span-5">
               <div className="mb-3 flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-md">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white shadow-md">
                   <GraduationCap className="h-5 w-5" />
                 </span>
                 <p className="eyebrow !tracking-[0.14em]">Education</p>
@@ -165,7 +155,7 @@ export function About({ projectCount, certificateCount, github, pillars, experie
             const Icon = PILLAR_ICONS[icon ?? ""] ?? Sparkles;
             return (
               <motion.article key={id} {...cardProps(3 + i)} className="card-premium group rounded-3xl p-6 md:col-span-4">
-                <span className={`mb-4 grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${PILLAR_GRADIENTS[i % PILLAR_GRADIENTS.length]} text-white shadow-md transition-transform duration-300 group-hover:scale-110`}>
+                <span className={`mb-4 grid h-11 w-11 place-items-center rounded-xl bg-brand-600 text-white shadow-md transition-transform duration-300 group-hover:scale-110`}>
                   <Icon className="h-5 w-5" />
                 </span>
                 <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>

@@ -40,7 +40,7 @@ export function BlogList({ posts }: { posts: Post[] }) {
           const cover = safeUrl(post.cover_url);
           return (
             <li key={post.id} className="card-premium group flex flex-col overflow-hidden rounded-2xl">
-              <div className="relative h-48 bg-gradient-to-br from-brand-600 to-accent-500">
+              <div className="relative h-48 bg-brand-600">
                 {cover && <Image src={cover} alt="" fill sizes="(min-width: 768px) 480px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />}
               </div>
               <div className="relative z-10 flex flex-1 flex-col p-6">

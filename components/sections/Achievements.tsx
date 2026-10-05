@@ -43,7 +43,7 @@ export function Achievements({ items }: { items: Achievement[] }) {
                 transition={{ delay: (i % 2) * 0.08 }}
                 className="card-premium flex gap-4 rounded-2xl p-5"
               >
-                <span className={`relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${meta.gradient} text-white shadow-md`}>
+                <span className={`relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-md`}>
                   <Icon className="h-5 w-5" />
                 </span>
                 <div className="relative z-10 min-w-0">

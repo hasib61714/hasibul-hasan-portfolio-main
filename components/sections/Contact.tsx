@@ -110,10 +110,10 @@ export function Contact() {
             </div>
 
             <ul className="flex flex-1 flex-col gap-3">
-              {CONTACT_INFO.map(({ icon: Icon, social, label, value, href, color }) => {
+              {CONTACT_INFO.map(({ icon: Icon, social, label, value, href }) => {
                 const inner = (
                   <>
-                    <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${color} text-white shadow-md transition-transform duration-300 group-hover:scale-105`}>
+                    <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-md transition-transform duration-300 group-hover:scale-105`}>
                       {social ? <SocialIcon name={social} className="h-5 w-5" /> : Icon ? <Icon className="h-5 w-5" /> : null}
                     </span>
                     <span className="min-w-0">
@@ -147,7 +147,7 @@ export function Contact() {
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
               >
                 <CalendarCheck className="h-4 w-4" /> Book a 30-minute call
               </a>

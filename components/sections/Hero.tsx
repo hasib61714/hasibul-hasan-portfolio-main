@@ -45,7 +45,7 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
   ];
 
   return (
-    <section id="hero" className="bg-noise relative flex min-h-[100svh] flex-col overflow-hidden mesh-gradient">
+    <section id="hero" className="relative flex min-h-[100svh] flex-col overflow-hidden bg-white dark:bg-gray-950">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />
       <div aria-hidden className="pointer-events-none absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white dark:from-gray-950 to-transparent" />
 
@@ -99,7 +99,7 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                 <button
                   type="button"
                   onClick={() => scrollTo("hire")}
-                  className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-brand-600/30 ring-1 ring-inset ring-white/15 transition-colors hover:from-brand-400"
+                  className="group inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:from-brand-400"
                 >
                   Hire me
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -179,8 +179,6 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
             className="flex justify-center"
           >
             <motion.div ref={portraitRef} style={{ y: portraitY }} className="relative">
-              {/* Soft glow */}
-              <div aria-hidden className="absolute inset-0 scale-110 rounded-full bg-gradient-to-br from-brand-500 to-accent-500 opacity-25 blur-3xl animate-pulse-slow" />
 
               {/* Rotating dashed ring */}
               <motion.div
@@ -191,7 +189,7 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
               />
 
               {/* Avatar frame */}
-              <div className="relative h-72 w-72 rounded-full bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 p-1 shadow-2xl shadow-brand-600/30 sm:h-80 sm:w-80 lg:h-[22rem] lg:w-[22rem]">
+              <div className="relative h-72 w-72 rounded-full bg-brand-500/60 p-1 sm:h-80 sm:w-80 lg:h-[22rem] lg:w-[22rem]">
                 <div className="relative h-full w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-900">
                   {avatarUrl ? (
                     <Image
@@ -203,7 +201,7 @@ export function Hero({ avatarUrl, cvUrl, projectCount, certificateCount }: HeroP
                       className="object-cover object-top"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-500/10 via-transparent to-cyan-400/10">
+                    <div className="grid h-full w-full place-items-center bg-brand-500/5">
                       <span className="gradient-text select-none text-8xl font-bold tracking-tighter">HH</span>
                     </div>
                   )}

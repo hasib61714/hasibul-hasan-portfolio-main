@@ -86,7 +86,6 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
       <Navbar />
       <main id="main" className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
         <div aria-hidden className="bg-grid pointer-events-none absolute inset-x-0 top-0 h-[34rem]" />
-        <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-96 w-[60rem] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
 
@@ -113,7 +112,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
 
             <div className="mt-8 flex flex-wrap gap-3">
               {live && (
-                <a href={live} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 ring-1 ring-inset ring-white/15 transition-all hover:-translate-y-0.5">
+                <a href={live} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5">
                   Visit live site <ArrowUpRight className="h-4 w-4" />
                 </a>
               )}
@@ -158,7 +157,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
               {project.problem && (
                 <section>
                   <h2 className="mb-4 flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
-                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-orange-500 to-rose-500 text-white"><Target className="h-5 w-5" /></span>
+                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white"><Target className="h-5 w-5" /></span>
                     The challenge
                   </h2>
                   <p className="leading-relaxed text-gray-700 dark:text-gray-300">{project.problem}</p>
@@ -168,7 +167,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
               {project.solution && (
                 <section>
                   <h2 className="mb-4 flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
-                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white"><Lightbulb className="h-5 w-5" /></span>
+                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white"><Lightbulb className="h-5 w-5" /></span>
                     The solution
                   </h2>
                   <p className="leading-relaxed text-gray-700 dark:text-gray-300">{project.solution}</p>

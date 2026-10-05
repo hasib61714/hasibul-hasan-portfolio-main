@@ -15,7 +15,7 @@ export function Card({ className, children, hover = true, glass = false }: CardP
         glass
           ? "glass-card"
           : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800",
-        hover && "hover:shadow-xl hover:shadow-brand-500/10 hover:-translate-y-1",
+        hover && "hover:shadow-xl hover:-translate-y-1",
         className
       )}
     >

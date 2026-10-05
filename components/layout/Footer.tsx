@@ -15,13 +15,11 @@ export async function Footer() {
 
   return (
     <footer className="dark relative overflow-hidden bg-gray-950 text-gray-400">
-      <div className="pointer-events-none absolute top-0 left-1/4 h-96 w-96 rounded-full bg-brand-600/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-accent-600/10 blur-3xl" />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-brand-500/30" />
 
       <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
         {/* CTA banner */}
-        <div className="relative mb-14 flex flex-col items-start justify-between gap-6 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-500/15 via-accent-500/10 to-transparent p-8 sm:flex-row sm:items-center">
+        <div className="relative mb-14 flex flex-col items-start justify-between gap-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-8 sm:flex-row sm:items-center">
           <div>
             <p className="eyebrow !text-brand-300 mb-2">Let&apos;s work together</p>
             <h3 className="text-xl sm:text-2xl font-bold text-white text-balance">
@@ -40,7 +38,7 @@ export async function Footer() {
         <div className="mb-12 grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
             <Link href="/" className="group mb-5 flex w-fit items-center gap-2.5">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 shadow-lg shadow-brand-500/30 transition-transform group-hover:scale-105">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 transition-transform group-hover:scale-105">
                 <Code2 className="h-5 w-5 text-white" />
               </span>
               <span className="text-xl font-bold tracking-tight">

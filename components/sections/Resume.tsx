@@ -25,7 +25,6 @@ function DocCard({
   title,
   description,
   icon: Icon,
-  gradient,
   delay,
 }: {
   doc?: Document;
@@ -46,7 +45,7 @@ function DocCard({
       transition={{ delay }}
       className="card-premium flex flex-col items-center rounded-2xl p-7 text-center"
     >
-      <div className={`mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br ${gradient} shadow-lg`}>
+      <div className={`mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-brand-600 shadow-lg`}>
         <Icon className="h-8 w-8 text-white" />
       </div>
       <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
@@ -66,7 +65,7 @@ function DocCard({
             </a>
             <a
               href={download}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 ring-1 ring-inset ring-white/15 transition-all hover:-translate-y-0.5 hover:from-brand-400"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:from-brand-400"
             >
               <Download className="h-4 w-4" /> Download
             </a>

@@ -21,15 +21,6 @@ const ICONS: Record<string, LucideIcon> = {
   palette: Palette,
 };
 
-const GRADIENTS = [
-  "from-brand-500 to-cyan-500",
-  "from-accent-500 to-brand-500",
-  "from-emerald-500 to-cyan-500",
-  "from-accent-500 to-pink-500",
-  "from-brand-600 to-accent-500",
-  "from-cyan-500 to-brand-500",
-];
-
 export function Services({ items }: { items: ContentBlock[] }) {
   return (
     <section id="services" className="section-padding bg-white dark:bg-gray-950">
@@ -53,7 +44,7 @@ export function Services({ items }: { items: ContentBlock[] }) {
                 transition={{ delay: (i % 3) * 0.08, duration: 0.5 }}
                 className="card-premium group flex flex-col rounded-2xl p-6"
               >
-                <span className={`relative z-10 mb-5 grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]} text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}>
+                <span className={`relative z-10 mb-5 grid h-12 w-12 place-items-center rounded-xl bg-brand-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}>
                   <Icon className="h-6 w-6" />
                 </span>
                 <h3 className="relative z-10 mb-2 text-lg font-bold text-gray-900 dark:text-white">{service.title}</h3>

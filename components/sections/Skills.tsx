@@ -40,8 +40,6 @@ export function Skills({ skills }: SkillsProps) {
   return (
     <section id="skills" className="section-padding bg-white dark:bg-gray-950 relative overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-1/4 right-0 w-96 h-96 bg-brand-400/5 dark:bg-brand-600/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400/5 dark:bg-accent-600/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container-max">
         <SectionHeader
@@ -65,11 +63,11 @@ export function Skills({ skills }: SkillsProps) {
               >
                 {/* Category header */}
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-md flex-shrink-0`}>
+                  <div className={`w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-md flex-shrink-0`}>
                     <meta.icon className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className={`text-sm font-extrabold bg-gradient-to-r ${meta.gradient} bg-clip-text text-transparent`}>
+                    <h3 className={`text-sm font-extrabold text-brand-600 dark:text-brand-400`}>
                       {category}
                     </h3>
                     <p className="text-xs text-gray-400 dark:text-gray-500">{catSkills.length} skill{catSkills.length > 1 ? "s" : ""}</p>
@@ -101,7 +99,7 @@ export function Skills({ skills }: SkillsProps) {
                               key={d}
                               className={`w-1.5 h-1.5 rounded-full transition-colors ${
                                 d < dots
-                                  ? `bg-gradient-to-br ${meta.gradient}`
+                                  ? `bg-brand-600`
                                   : "bg-gray-300 dark:bg-gray-700"
                               }`}
                             />

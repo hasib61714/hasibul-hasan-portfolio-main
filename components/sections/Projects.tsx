@@ -18,15 +18,6 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Mobile:       Smartphone,
 };
 
-const PROJECT_GRADIENTS = [
-  "from-brand-600 to-accent-500",
-  "from-accent-600 to-brand-500",
-  "from-brand-500 to-cyan-500",
-  "from-cyan-600 to-brand-600",
-  "from-accent-500 to-cyan-500",
-  "from-brand-700 to-accent-500",
-];
-
 interface ProjectsProps {
   projects: Project[];
 }
@@ -39,7 +30,6 @@ export function Projects({ projects }: ProjectsProps) {
 
   return (
     <section id="projects" className="section-padding relative overflow-hidden bg-gray-50/70 dark:bg-gray-900/40">
-      <div aria-hidden className="pointer-events-none absolute right-0 top-1/2 h-96 w-96 rounded-full bg-brand-500/5 blur-3xl" />
       <div className="container-max">
         <SectionHeader
           badge="Selected work"
@@ -59,7 +49,7 @@ export function Projects({ projects }: ProjectsProps) {
                 className={cn(
                   "rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200",
                   filter === cat
-                    ? "bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-600/25"
+                    ? "bg-brand-600 text-white"
                     : "border border-gray-200 bg-white text-gray-600 hover:border-brand-400/60 hover:text-brand-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-400 dark:hover:text-brand-300"
                 )}
               >
@@ -86,7 +76,7 @@ export function Projects({ projects }: ProjectsProps) {
                   transition={{ duration: 0.35, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
                   className="group card-premium flex flex-col overflow-hidden rounded-2xl"
                 >
-                  <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${PROJECT_GRADIENTS[idx % PROJECT_GRADIENTS.length]}`}>
+                  <div className={`relative h-44 overflow-hidden bg-brand-600`}>
                     {image ? (
                       <Image
                         src={image}

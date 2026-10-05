@@ -35,7 +35,7 @@ export function Writing({ posts }: { posts: Post[] }) {
                 transition={{ delay: i * 0.08 }}
                 className="card-premium group flex flex-col overflow-hidden rounded-2xl"
               >
-                <div className="relative h-40 bg-gradient-to-br from-brand-600 to-accent-500">
+                <div className="relative h-40 bg-brand-600">
                   {cover && <Image src={cover} alt="" fill sizes="(min-width: 768px) 380px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />}
                 </div>
                 <div className="relative z-10 flex flex-1 flex-col p-5">

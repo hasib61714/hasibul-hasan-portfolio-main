@@ -10,15 +10,6 @@ import { Modal } from "@/components/ui/Modal";
 import { formatDate, safeUrl } from "@/lib/utils";
 import type { Certificate } from "@/types";
 
-const CERT_GRADIENTS = [
-  "from-brand-600 to-accent-500",
-  "from-accent-600 to-brand-500",
-  "from-brand-500 to-cyan-500",
-  "from-cyan-600 to-brand-600",
-  "from-accent-500 to-cyan-500",
-  "from-brand-700 to-accent-500",
-];
-
 interface CertificatesProps {
   certificates: Certificate[];
 }
@@ -58,7 +49,7 @@ export function Certificates({ certificates }: CertificatesProps) {
                   aria-label={`View details for ${cert.title}`}
                   className="flex flex-1 flex-col text-left"
                 >
-                  <div className={`relative flex h-32 items-center justify-center bg-gradient-to-br ${CERT_GRADIENTS[idx % CERT_GRADIENTS.length]}`}>
+                  <div className={`relative flex h-32 items-center justify-center bg-brand-600`}>
                     {image ? (
                       <Image
                         src={image}
@@ -127,7 +118,7 @@ export function Certificates({ certificates }: CertificatesProps) {
                 className="h-[26rem] w-full rounded-xl border border-gray-200 bg-white dark:border-white/10"
               />
             ) : (
-              <div className={`flex h-40 items-center justify-center rounded-xl bg-gradient-to-br ${CERT_GRADIENTS[0]}`}>
+              <div className={`flex h-40 items-center justify-center rounded-xl bg-brand-600`}>
                 <Award aria-hidden className="h-16 w-16 text-white" />
               </div>
             )}

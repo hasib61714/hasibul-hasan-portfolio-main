@@ -113,8 +113,6 @@ export default function LoginPage() {
     <div className="dark min-h-screen flex items-center justify-center bg-gray-950 p-4">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-20 w-64 h-64 bg-brand-600/20 rounded-full filter blur-3xl animate-blob" />
-        <div className="absolute bottom-1/4 -right-20 w-64 h-64 bg-accent-600/20 rounded-full filter blur-3xl animate-blob animation-delay-2000" />
       </div>
 
       <motion.div
@@ -126,7 +124,7 @@ export default function LoginPage() {
         <div className="glass-card rounded-3xl p-8 shadow-2xl">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shadow-lg mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg mb-4">
               <Code2 className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white">Admin Panel</h1>

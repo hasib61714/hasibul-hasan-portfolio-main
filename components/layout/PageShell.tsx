@@ -20,7 +20,6 @@ export async function PageShell({ children }: { children: React.ReactNode }) {
       <Navbar />
       <main id="main" className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
         <div aria-hidden className="bg-grid pointer-events-none absolute inset-x-0 top-0 h-[30rem]" />
-        <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-96 w-[60rem] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
         {children}
       </main>
       <Footer />

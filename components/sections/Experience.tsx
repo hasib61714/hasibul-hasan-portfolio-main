@@ -17,7 +17,6 @@ export function Experience({ items }: { items: ExperienceItem[] }) {
 
   return (
     <section id="experience" className="section-padding bg-white dark:bg-gray-950 relative overflow-hidden">
-      <div className="absolute top-1/3 left-0 w-96 h-96 bg-brand-400/5 dark:bg-brand-600/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container-max">
         <SectionHeader
@@ -46,7 +45,7 @@ export function Experience({ items }: { items: ExperienceItem[] }) {
                 {activeTab === tab && (
                   <motion.div
                     layoutId="experience-tab"
-                    className="absolute inset-0 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 shadow-lg shadow-brand-500/30"
+                    className="absolute inset-0 rounded-xl bg-brand-600"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -62,7 +61,7 @@ export function Experience({ items }: { items: ExperienceItem[] }) {
         {/* Timeline */}
         <div ref={ref} role="tabpanel" className="relative max-w-3xl mx-auto">
           {/* Vertical line */}
-          <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-brand-500/60 via-brand-300/30 to-transparent hidden sm:block" />
+          <div className="absolute left-8 top-0 bottom-0 w-px bg-brand-500/30 hidden sm:block" />
 
           <div className="space-y-6">
             {filtered.map((item, idx) => (
@@ -75,7 +74,7 @@ export function Experience({ items }: { items: ExperienceItem[] }) {
               >
                 {/* Timeline dot */}
                 <div className="absolute left-4 top-6 hidden sm:flex">
-                  <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-gray-950 -translate-x-1/2`}>
+                  <div className={`w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-gray-950 -translate-x-1/2`}>
                     {item.type === "work"
                       ? <Briefcase className="w-4 h-4 text-white" />
                       : <GraduationCap className="w-4 h-4 text-white" />
@@ -100,7 +99,7 @@ export function Experience({ items }: { items: ExperienceItem[] }) {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <p className={`text-sm font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent`}>
+                        <p className={`text-sm font-bold text-brand-600 dark:text-brand-400`}>
                           {item.organization}
                         </p>
                         {item.link && (
@@ -128,7 +127,7 @@ export function Experience({ items }: { items: ExperienceItem[] }) {
                   <ul className="space-y-2 mb-4">
                     {item.description.map((point, i) => (
                       <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                        <span className={`mt-2 w-1.5 h-1.5 rounded-full bg-gradient-to-br ${item.color} flex-shrink-0`} />
+                        <span className={`mt-2 w-1.5 h-1.5 rounded-full bg-brand-600 flex-shrink-0`} />
                         {point}
                       </li>
                     ))}

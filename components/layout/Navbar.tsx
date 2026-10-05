@@ -68,7 +68,7 @@ export function Navbar() {
       <motion.div
         aria-hidden
         style={{ scaleX: progress }}
-        className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-gradient-to-r from-brand-500 via-accent-500 to-cyan-400"
+        className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-brand-600"
       />
 
       <motion.header
@@ -84,7 +84,7 @@ export function Navbar() {
           )}
         >
           <Link href="/" aria-label={`${profile.name} — home`} className="group flex items-center gap-2.5 shrink-0">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 via-accent-500 to-cyan-400 shadow-lg shadow-brand-500/30 transition-transform duration-300 group-hover:scale-105">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 transition-transform duration-300 group-hover:scale-105">
               <Code2 className="h-5 w-5 text-white" />
             </span>
             <span className="hidden sm:block text-base font-bold tracking-tight">
@@ -112,7 +112,7 @@ export function Navbar() {
                   {active && (
                     <motion.span
                       layoutId="active-pill"
-                      className="absolute inset-0 rounded-lg bg-gradient-to-b from-brand-500 to-brand-600 shadow-sm"
+                      className="absolute inset-0 rounded-lg bg-brand-600 shadow-sm"
                       transition={{ type: "spring", stiffness: 400, damping: 32 }}
                     />
                   )}
@@ -136,7 +136,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => goTo("#hire")}
-              className="hidden sm:inline-flex items-center rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 ring-1 ring-inset ring-white/15 transition-all hover:from-brand-400 hover:-translate-y-0.5"
+              className="hidden sm:inline-flex items-center rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:from-brand-400 hover:-translate-y-0.5"
             >
               Hire me
             </button>
@@ -184,7 +184,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => goTo("#hire")}
-                className="mt-1 w-full rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 py-3 text-sm font-semibold text-white"
+                className="mt-1 w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white"
               >
                 Hire me
               </button>
